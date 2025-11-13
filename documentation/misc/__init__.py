@@ -1,2 +1,0 @@
-"""Documentation and planning files."""
-
