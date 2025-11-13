@@ -1,0 +1,17 @@
+# Core dependencies for 2048 AI project
+# TODO: Add version pins as needed
+
+# Numerical computing
+numpy>=1.20.0
+
+# Data processing and analysis
+pandas>=1.3.0
+pyarrow>=5.0.0  # For Parquet file support
+
+# Game UI (optional, for human play and replay)
+pygame>=2.0.0
+
+# Type checking and development (optional)
+# mypy>=0.900
+# pytest>=6.0.0
+

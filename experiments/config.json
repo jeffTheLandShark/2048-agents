@@ -1,0 +1,26 @@
+{
+  "experiment_name": "baseline_experiment",
+  "board_size": 4,
+  "num_games": 100,
+  "agent": {
+    "type": "expectimax",
+    "config": {
+      "depth_limit": 5,
+      "time_limit_ms": 100,
+      "heuristic_weights": {
+        "empty": 2.7,
+        "monotonicity": 1.0,
+        "smoothness": 0.1,
+        "merge_potential": 1.0
+      }
+    }
+  },
+  "logging": {
+    "enabled": true,
+    "log_dir": "data/raw_logs",
+    "log_format": "jsonl"
+  },
+  "seed": null,
+  "output_dir": "data/processed"
+}
+
