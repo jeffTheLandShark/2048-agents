@@ -2,6 +2,7 @@
 
 from abc import ABC, abstractmethod
 from typing import List, Any
+from game import Board
 
 
 class Agent(ABC):
@@ -12,12 +13,12 @@ class Agent(ABC):
     """
 
     @abstractmethod
-    def choose_action(self, state: List[List[int]], legal_moves: List[str]) -> str:
+    def choose_action(self, state: Board, legal_moves: List[str]) -> str:
         """
         Choose an action given the current game state.
 
         Args:
-            state: Current board state as 2D list of tile values.
+            state: Current board state as Board instance.
             legal_moves: List of legal action strings ("UP", "DOWN", "LEFT", "RIGHT").
 
         Returns:

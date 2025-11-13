@@ -3,6 +3,9 @@
 from typing import List, Dict, Any, Optional
 from pathlib import Path
 import json
+from logging import GameSummary
+from heuristics import HeuristicFeatures
+from game import Board
 
 
 class StatsLogger:
@@ -44,12 +47,12 @@ class StatsLogger:
     def log_step(
         self,
         t: int,
-        board: List[List[int]],
+        board: Board,
         action: Optional[str],
         reward: float,
         score: int,
         tile_counts: Dict[str, int],
-        heuristics: Dict[str, float],
+        heuristics: HeuristicFeatures,
         done: bool
     ) -> None:
         """
@@ -57,22 +60,22 @@ class StatsLogger:
 
         Args:
             t: Time step (0-indexed).
-            board: Board state as 2D list.
+            board: Board state as Board instance. Will be converted to flattened encoding for logging.
             action: Action taken (None for initial state).
             reward: Reward received this step.
             score: Cumulative score after this step.
             tile_counts: Dictionary mapping tile values to counts.
-            heuristics: Dictionary of heuristic feature values.
+            heuristics: HeuristicFeatures dictionary with feature values.
             done: Whether game is over.
         """
         raise NotImplementedError
 
-    def end_game(self, summary: Dict[str, Any]) -> None:
+    def end_game(self, summary: GameSummary) -> None:
         """
         Finalize and write game log to file.
 
         Args:
-            summary: Dictionary containing game summary statistics:
+            summary: GameSummary dictionary containing game summary statistics:
                      - final_score: Final game score
                      - highest_tile: Highest tile reached
                      - game_length: Number of steps

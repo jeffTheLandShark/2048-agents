@@ -1,7 +1,8 @@
 """Pygame UI for human play and replay visualization."""
 
-from typing import Optional, List, Dict, Any
+from typing import Optional, List
 from pathlib import Path
+from game import StepInfo, Board
 
 
 class PygameUI:
@@ -24,20 +25,20 @@ class PygameUI:
         Initialize pygame UI.
 
         Args:
-            board_size: Size of the game board (n×n).
+            board_size: Size of the game board (nxn).
             window_size: Window size in pixels (square).
             fps: Frames per second for rendering.
         """
         raise NotImplementedError
 
-    def render(self, board: List[List[int]], score: int, info: Optional[Dict[str, Any]] = None) -> None:
+    def render(self, board: Board, score: int, info: Optional[StepInfo] = None) -> None:
         """
         Render current board state.
 
         Args:
-            board: Current board state as 2D list.
+            board: Current board state as Board instance. Convert to list for rendering if needed using board.to_list().
             score: Current game score.
-            info: Optional additional info to display.
+            info: Optional StepInfo with additional metadata to display.
         """
         raise NotImplementedError
 

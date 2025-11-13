@@ -2,7 +2,8 @@
 
 from typing import List, Optional
 import numpy.random as random
-from agents.base import Agent
+from agents import Agent
+from game import Board
 
 
 class RandomAgent(Agent):
@@ -21,7 +22,7 @@ class RandomAgent(Agent):
         """
         raise NotImplementedError
 
-    def choose_action(self, state: List[List[int]], legal_moves: List[str]) -> str:
+    def choose_action(self, state: Board, legal_moves: List[str]) -> str:
         """
         Choose a random legal action.
 

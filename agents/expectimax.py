@@ -1,7 +1,8 @@
 """Expectimax agent implementation for 2048."""
 
 from typing import List, Dict, Optional
-from agents.base import Agent
+from agents import Agent
+from game import Board
 
 
 class ExpectimaxAgent(Agent):
@@ -31,12 +32,12 @@ class ExpectimaxAgent(Agent):
         """
         raise NotImplementedError
 
-    def choose_action(self, state: List[List[int]], legal_moves: List[str]) -> str:
+    def choose_action(self, state: Board, legal_moves: List[str]) -> str:
         """
         Choose action using Expectimax search.
 
         Args:
-            state: Current board state as 2D list.
+            state: Current board state as Board instance.
             legal_moves: List of legal action strings.
 
         Returns:

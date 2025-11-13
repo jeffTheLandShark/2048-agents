@@ -1,8 +1,9 @@
 """Core 2048 game environment with deterministic rules and transitions."""
 
-from typing import List, Tuple, Optional, Dict, Any
+from typing import List, Tuple, Optional
 from abc import ABC
 import numpy.random as random
+from game import ResetInfo, StepInfo, Board
 
 
 class GameEnv:
@@ -29,16 +30,16 @@ class GameEnv:
         """
         raise NotImplementedError
 
-    def reset(self) -> Tuple[List[List[int]], Dict[str, Any]]:
+    def reset(self) -> Tuple[Board, ResetInfo]:
         """
         Reset the game to initial state.
 
         Returns:
-            Tuple of (initial_board, info_dict) where info_dict contains metadata.
+            Tuple of (initial_board, ResetInfo) where ResetInfo contains metadata.
         """
         raise NotImplementedError
 
-    def step(self, action: str) -> Tuple[List[List[int]], float, bool, Dict[str, Any]]:
+    def step(self, action: str) -> Tuple[Board, float, bool, StepInfo]:
         """
         Execute one game step.
 
@@ -50,11 +51,11 @@ class GameEnv:
             - next_state: Board state after action and random spawn
             - reward: Score gained from this move
             - done: Whether game is over
-            - info: Additional metadata (score, tile counts, etc.)
+            - info: StepInfo with additional metadata (score, tile counts, etc.)
         """
         raise NotImplementedError
 
-    def legal_moves(self, board: Optional[List[List[int]]] = None) -> List[str]:
+    def legal_moves(self, board: Optional[Board] = None) -> List[str]:
         """
         Get list of legal moves from current or given board state.
 
@@ -66,7 +67,7 @@ class GameEnv:
         """
         raise NotImplementedError
 
-    def is_game_over(self, board: Optional[List[List[int]]] = None) -> bool:
+    def is_game_over(self, board: Optional[Board] = None) -> bool:
         """
         Check if game is over (no legal moves available).
 
@@ -87,12 +88,12 @@ class GameEnv:
         """
         raise NotImplementedError
 
-    def get_board(self) -> List[List[int]]:
+    def get_board(self) -> Board:
         """
         Get current board state.
 
         Returns:
-            Current board as 2D list of tile values.
+            Current board as Board instance.
         """
         raise NotImplementedError
 

@@ -3,8 +3,8 @@
 from typing import Optional, Dict, Any
 from pathlib import Path
 from game.game_env import GameEnv
-from agents.base import Agent
-from logging.stats_logger import StatsLogger
+from agents import Agent
+from logging import StatsLogger, GameSummary, ExperimentSummary
 
 
 def run_experiment(
@@ -15,7 +15,7 @@ def run_experiment(
     agent_name: Optional[str] = None,
     config: Optional[Dict[str, Any]] = None,
     seed: Optional[int] = None
-) -> Dict[str, Any]:
+) -> ExperimentSummary:
     """
     Run an experiment: execute N games with an agent and optionally log results.
 
@@ -29,7 +29,7 @@ def run_experiment(
         seed: Optional random seed for reproducibility.
 
     Returns:
-        Dictionary with experiment summary statistics:
+        ExperimentSummary with experiment summary statistics:
         - mean_score: Average final score
         - std_score: Standard deviation of scores
         - mean_highest_tile: Average highest tile reached
@@ -45,7 +45,7 @@ def run_single_game(
     logger: Optional[StatsLogger] = None,
     game_id: Optional[str] = None,
     seed: Optional[int] = None
-) -> Dict[str, Any]:
+) -> GameSummary:
     """
     Run a single game with an agent.
 
@@ -57,7 +57,7 @@ def run_single_game(
         seed: Optional random seed for this game.
 
     Returns:
-        Dictionary with game summary:
+        GameSummary with game summary:
         - final_score: Final game score
         - highest_tile: Highest tile reached
         - game_length: Number of steps

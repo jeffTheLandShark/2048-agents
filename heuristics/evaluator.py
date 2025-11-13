@@ -2,6 +2,7 @@
 
 from typing import List, Dict
 from heuristics.features import compute_all_features
+from game import Board
 
 
 class HeuristicEvaluator:
@@ -22,12 +23,12 @@ class HeuristicEvaluator:
         """
         raise NotImplementedError
 
-    def evaluate(self, board: List[List[int]]) -> float:
+    def evaluate(self, board: Board) -> float:
         """
         Evaluate board state using weighted heuristic features.
 
         Args:
-            board: Board state as 2D list of tile values.
+            board: Board state as Board instance.
 
         Returns:
             Heuristic score H(s) = Σ w_i * f_i.

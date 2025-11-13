@@ -3,9 +3,10 @@
 from typing import List, Optional
 from pathlib import Path
 import pandas as pd
+from logging import GameLog
 
 
-def load_jsonl_logs(log_file: Path) -> List[dict]:
+def load_jsonl_logs(log_file: Path) -> List[GameLog]:
     """
     Load all game records from a JSONL log file.
 
@@ -13,19 +14,19 @@ def load_jsonl_logs(log_file: Path) -> List[dict]:
         log_file: Path to JSONL file (one JSON object per line).
 
     Returns:
-        List of game dictionaries.
+        List of GameLog dictionaries.
     """
     raise NotImplementedError
 
 
-def create_games_summary_table(logs: List[dict]) -> pd.DataFrame:
+def create_games_summary_table(logs: List[GameLog]) -> pd.DataFrame:
     """
     Create games_summary.parquet table from raw logs.
 
     One row per game with summary statistics.
 
     Args:
-        logs: List of game dictionaries from JSONL.
+        logs: List of GameLog dictionaries from JSONL.
 
     Returns:
         DataFrame with columns: game_id, agent, board_size, seed, final_score,
@@ -34,14 +35,14 @@ def create_games_summary_table(logs: List[dict]) -> pd.DataFrame:
     raise NotImplementedError
 
 
-def create_steps_table(logs: List[dict]) -> pd.DataFrame:
+def create_steps_table(logs: List[GameLog]) -> pd.DataFrame:
     """
     Create steps.parquet table from raw logs.
 
     One row per step of every game.
 
     Args:
-        logs: List of game dictionaries from JSONL.
+        logs: List of GameLog dictionaries from JSONL.
 
     Returns:
         DataFrame with columns: game_id, t, action, reward, score, done,
@@ -50,14 +51,14 @@ def create_steps_table(logs: List[dict]) -> pd.DataFrame:
     raise NotImplementedError
 
 
-def create_tile_counts_table(logs: List[dict]) -> pd.DataFrame:
+def create_tile_counts_table(logs: List[GameLog]) -> pd.DataFrame:
     """
     Create tile_counts.parquet table from raw logs.
 
     Normalized long-format table: one row per (game, step, tile_value).
 
     Args:
-        logs: List of game dictionaries from JSONL.
+        logs: List of GameLog dictionaries from JSONL.
 
     Returns:
         DataFrame with columns: game_id, t, tile_value, count.
