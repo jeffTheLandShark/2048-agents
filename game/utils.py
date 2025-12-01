@@ -6,7 +6,7 @@ import numpy as np
 from game import MergeResult, SpawnLocation, Position, Board
 
 
-def merge_line(line: List[int]) -> MergeResult:
+def merge_line(line: List[int], reverse: bool = False) -> MergeResult:
     """
     Merge tiles in a single line (row or column) according to 2048 rules.
 
@@ -20,9 +20,11 @@ def merge_line(line: List[int]) -> MergeResult:
         MergeResult with merged_line and score_gained.
     """
     # Remove zeros and prepare for merging
-    merge_line = drop_zeros(line)
+    merge_line = _drop_zeros(line)
+    if reverse:
+        merge_line.reverse()
     score_gained = 0
-    while merges_possible(merge_line):
+    while _merges_possible(merge_line):
         for i in range(len(merge_line) - 1):
             if merge_line[i] == merge_line[i + 1]:
                 # Merge tiles
@@ -30,7 +32,12 @@ def merge_line(line: List[int]) -> MergeResult:
                 score_gained += new_value
                 merge_line[i] = new_value
                 merge_line[i + 1] = 0
-        merge_line = drop_zeros(merge_line)
+        merge_line = _drop_zeros(merge_line)
+
+    merge_line = [0] * (len(line) - len(merge_line)) + merge_line
+
+    if reverse:
+        merge_line.reverse()
 
     return MergeResult(
         merged_line=merge_line,
@@ -38,7 +45,7 @@ def merge_line(line: List[int]) -> MergeResult:
     )
 
 
-def drop_zeros(line: List[int]) -> List[int]:
+def _drop_zeros(line: List[int]) -> List[int]:
     """
     Remove zeros from the line, simulating tile sliding.
 
@@ -50,7 +57,7 @@ def drop_zeros(line: List[int]) -> List[int]:
     return [tile for tile in line if tile != 0]
 
 
-def merges_possible(line: List[int]) -> bool:
+def _merges_possible(line: List[int]) -> bool:
     """
     Check if any merges are possible in the given line.
 
@@ -77,7 +84,7 @@ def spawn_random_tile(
     Returns:
         Tuple of (updated_board, SpawnLocation) where SpawnLocation contains row and col.
     """
-    empty_cells = get_empty_cells(board)
+    empty_cells = _get_empty_cells(board)
     if not empty_cells:
         return board, SpawnLocation(-1, -1)  # No empty cells to spawn
 
@@ -88,7 +95,7 @@ def spawn_random_tile(
     return board, SpawnLocation(spawn_cell.row, spawn_cell.col)
 
 
-def get_empty_cells(board: Board) -> List[Position]:
+def _get_empty_cells(board: Board) -> List[Position]:
     """
     Get list of coordinates for all empty cells on the board.
 
