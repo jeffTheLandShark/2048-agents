@@ -6,25 +6,32 @@ from typing import TypedDict, List, Dict, Optional
 from .board import Board
 
 __all__ = [
-    'Board',
-    'Position',
-    'SpawnLocation',
-    'MergeResult',
-    'ResetInfo',
-    'StepInfo',
+    "Board",
+    "Position",
+    "SpawnLocation",
+    "MergeResult",
+    "ResetInfo",
+    "StepInfo",
 ]
 
 
 @dataclass
 class Position:
     """Represents a board position (row, column)."""
+
     row: int
     col: int
+
+    @property
+    def as_tuple(self) -> tuple:
+        """Return position as (row, col) tuple."""
+        return (self.row, self.col)
 
 
 @dataclass
 class SpawnLocation:
     """Represents a tile spawn location."""
+
     row: int
     col: int
 
@@ -32,12 +39,14 @@ class SpawnLocation:
 @dataclass
 class MergeResult:
     """Result of merging a line of tiles."""
+
     merged_line: List[int]
     score_gained: int
 
 
 class ResetInfo(TypedDict, total=False):
     """Information dictionary returned by GameEnv.reset()."""
+
     score: int
     tile_counts: Dict[str, int]
     heuristics: Dict[str, float]
@@ -45,6 +54,7 @@ class ResetInfo(TypedDict, total=False):
 
 class StepInfo(TypedDict, total=False):
     """Information dictionary returned by GameEnv.step()."""
+
     score: int
     tile_counts: Dict[str, int]
     heuristics: Dict[str, float]
