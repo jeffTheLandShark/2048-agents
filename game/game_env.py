@@ -135,7 +135,14 @@ class GameEnv:
         Returns:
             List of legal action strings ("UP", "DOWN", "LEFT", "RIGHT").
         """
-        return ["UP"]  # Placeholder implementation
+        if board is None:
+            board = self._board
+        legal_actions = []
+        for action in Action:
+            next_state, _ = self.slide(action.value)
+            if not np.array_equal(next_state.array, board.array):
+                legal_actions.append(action.value)
+        return legal_actions
 
     def is_game_over(self, board: Optional[Board] = None) -> bool:
         """
