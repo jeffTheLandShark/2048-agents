@@ -2,6 +2,7 @@
 
 from typing import List, Optional, Tuple
 import numpy.random as random
+import numpy as np
 from game import MergeResult, SpawnLocation, Position, Board
 
 
@@ -18,14 +19,51 @@ def merge_line(line: List[int]) -> MergeResult:
     Returns:
         MergeResult with merged_line and score_gained.
     """
-    raise NotImplementedError
+    # Remove zeros and prepare for merging
+    merge_line = drop_zeros(line)
+    score_gained = 0
+    while merges_possible(merge_line):
+        for i in range(len(merge_line) - 1):
+            if merge_line[i] == merge_line[i + 1]:
+                # Merge tiles
+                new_value = merge_line[i] * 2
+                score_gained += new_value
+                merge_line[i] = new_value
+                merge_line[i + 1] = 0
+        merge_line = drop_zeros(merge_line)
+
+    return MergeResult(
+        merged_line=merge_line,
+        score_gained=score_gained,
+    )
+
+
+def drop_zeros(line: List[int]) -> List[int]:
+    """
+    Remove zeros from the line, simulating tile sliding.
+
+    Args:
+        line: List of tile values (may contain zeros).
+    Returns:
+        List of tile values with zeros removed.
+    """
+    return [tile for tile in line if tile != 0]
+
+
+def merges_possible(line: List[int]) -> bool:
+    """
+    Check if any merges are possible in the given line.
+
+    Args:
+        line: List of tile values (no zeros).
+    Returns:
+        True if merges are possible, False otherwise.
+    """
+    return any(line[i] == line[i + 1] for i in range(len(line) - 1))
 
 
 def spawn_random_tile(
-    board: Board,
-    rng: random.Generator,
-    value: int = 2,
-    probability_4: float = 0.1
+    board: Board, rng: random.Generator, value: int = 2, probability_4: float = 0.1
 ) -> Tuple[Board, SpawnLocation]:
     """
     Spawn a random tile (2 or 4) in an empty cell.
@@ -39,7 +77,15 @@ def spawn_random_tile(
     Returns:
         Tuple of (updated_board, SpawnLocation) where SpawnLocation contains row and col.
     """
-    raise NotImplementedError
+    empty_cells = get_empty_cells(board)
+    if not empty_cells:
+        return board, SpawnLocation(-1, -1)  # No empty cells to spawn
+
+    spawn_idx = rng.choice(len(empty_cells))
+    spawn_cell = empty_cells[spawn_idx]  # random empty cell
+    tile_value = value * 2 if rng.random() < probability_4 else value
+    board[spawn_cell.as_tuple] = tile_value  # Set tile at (row, col) with tile_value
+    return board, SpawnLocation(spawn_cell.row, spawn_cell.col)
 
 
 def get_empty_cells(board: Board) -> List[Position]:
@@ -52,18 +98,9 @@ def get_empty_cells(board: Board) -> List[Position]:
     Returns:
         List of Position objects for empty cells.
     """
-    raise NotImplementedError
-
-
-def create_rng(seed: Optional[int] = None) -> random.Generator:
-    """
-    Create a numpy random number generator with optional seed.
-
-    Args:
-        seed: Optional random seed for deterministic behavior.
-
-    Returns:
-        numpy.random.Generator instance.
-    """
-    raise NotImplementedError
-
+    return [
+        Position(row, col)
+        for row in range(board.size)
+        for col in range(board.size)
+        if board[row, col] == 0
+    ]
