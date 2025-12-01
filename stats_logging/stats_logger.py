@@ -3,7 +3,7 @@
 from typing import List, Dict, Any, Optional
 from pathlib import Path
 import json
-from logging import GameSummary
+from stats_logging import GameSummary
 from heuristics import HeuristicFeatures
 from game import Board
 

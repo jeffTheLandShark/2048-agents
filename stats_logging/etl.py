@@ -3,7 +3,7 @@
 from typing import List, Optional
 from pathlib import Path
 import pandas as pd
-from logging import GameLog
+from stats_logging import GameLog
 
 
 def load_jsonl_logs(log_file: Path) -> List[GameLog]:
