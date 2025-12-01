@@ -2,11 +2,13 @@
 
 from dataclasses import dataclass
 from typing import TypedDict, List, Dict, Optional
+from enum import Enum
 
 from .board import Board
 
 __all__ = [
     "Board",
+    "Action",
     "Position",
     "SpawnLocation",
     "MergeResult",
@@ -59,3 +61,24 @@ class StepInfo(TypedDict, total=False):
     tile_counts: Dict[str, int]
     heuristics: Dict[str, float]
     action_taken: str
+
+
+class Action(Enum):
+    """Enumeration of possible game actions."""
+
+    UP = "UP"
+    DOWN = "DOWN"
+    LEFT = "LEFT"
+    RIGHT = "RIGHT"
+
+    # map action to direction
+    @classmethod
+    def direction(cls, action: "Action") -> Position:
+        """Get Direction enum corresponding to Action."""
+        mapping = {
+            cls.UP: Position(-1, 0),
+            cls.DOWN: Position(1, 0),
+            cls.LEFT: Position(0, -1),
+            cls.RIGHT: Position(0, 1),
+        }
+        return mapping[action]
