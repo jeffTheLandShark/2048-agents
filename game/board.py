@@ -12,7 +12,9 @@ class Board:
     Use `.array` property for performance-critical code that needs direct numpy access.
     """
 
-    def __init__(self, board: Union[List[List[int]], np.ndarray], size: Optional[int] = None) -> None:
+    def __init__(
+        self, board: Union[List[List[int]], np.ndarray], size: Optional[int] = None
+    ) -> None:
         """
         Initialize Board from a 2D list or numpy array.
 
@@ -37,7 +39,9 @@ class Board:
 
         # Validate size if provided
         if size is not None and self._array.shape[0] != size:
-            raise ValueError(f"Board size mismatch: expected {size}, got {self._array.shape[0]}")
+            raise ValueError(
+                f"Board size mismatch: expected {size}, got {self._array.shape[0]}"
+            )
 
     @property
     def array(self) -> np.ndarray:
@@ -61,7 +65,7 @@ class Board:
         """
         return self._array.shape[0]
 
-    def copy(self) -> 'Board':
+    def copy(self) -> "Board":
         """
         Create a fast copy of the board using numpy array copy.
 
@@ -116,7 +120,7 @@ class Board:
         return self._array.tolist()
 
     @classmethod
-    def from_list(cls, board: List[List[int]], size: Optional[int] = None) -> 'Board':
+    def from_list(cls, board: List[List[int]], size: Optional[int] = None) -> "Board":
         """
         Create Board instance from a 2D list.
 
@@ -152,7 +156,10 @@ def encode_board_log2(board: Union[Board, List[List[int]]]) -> List[int]:
     Returns:
         Flattened list of log2 values (row-major order).
     """
-    raise NotImplementedError
+    return [
+        0 if tile == 0 else int(np.log2(tile))  # Convert to log2
+        for tile in encode_board_flat(board)
+    ]
 
 
 def decode_board_log2(encoded: List[int], board_size: int) -> Board:
@@ -161,12 +168,12 @@ def decode_board_log2(encoded: List[int], board_size: int) -> Board:
 
     Args:
         encoded: Flattened list of log2 values.
-        board_size: Size of the board (n×n).
+        board_size: Size of the board (nxn).
 
     Returns:
         Board instance.
     """
-    raise NotImplementedError
+    return decode_board_flat([0 if val == 0 else 2**val for val in encoded], board_size)
 
 
 def encode_board_flat(board: Union[Board, List[List[int]]]) -> List[int]:
@@ -179,7 +186,11 @@ def encode_board_flat(board: Union[Board, List[List[int]]]) -> List[int]:
     Returns:
         Flattened list of tile values (row-major order).
     """
-    raise NotImplementedError
+    return [
+        tile  # Raw tile value
+        for row in (board.array if isinstance(board, Board) else board)  # Iterate rows
+        for tile in row  # Iterate tiles
+    ]
 
 
 def decode_board_flat(encoded: List[int], board_size: int) -> Board:
@@ -188,10 +199,10 @@ def decode_board_flat(encoded: List[int], board_size: int) -> Board:
 
     Args:
         encoded: Flattened list of tile values.
-        board_size: Size of the board (n×n).
+        board_size: Size of the board (nxn).
 
     Returns:
         Board instance.
     """
-    raise NotImplementedError
-
+    array = np.array(encoded, dtype=np.int32).reshape((board_size, board_size))
+    return Board(array)
