@@ -13,5 +13,5 @@ pygame>=2.0.0
 
 # Type checking and development (optional)
 # mypy>=0.900
-# pytest>=6.0.0
+pytest>=6.0.0
 
