@@ -3,7 +3,8 @@
 from typing import List, Optional, Tuple
 import numpy.random as random
 import numpy as np
-from game import MergeResult, SpawnLocation, Position, Board
+from . import MergeResult, SpawnLocation, Position
+from .board import Board
 
 
 def merge_line(line: List[int], reverse: bool = False) -> MergeResult:
