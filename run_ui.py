@@ -64,7 +64,7 @@ def main():
     agent_parser.add_argument("--agent", type=str, choices=["random", "expectimax", "mcts"], default="random", help="Agent to run")
     agent_parser.add_argument("--log-file", type=str, help="Path to save game logs (JSONL)")
     agent_parser.add_argument("--seed", type=int, help="Random seed")
-    agent_parser.add_argument("--delay", type=int, default=100, help="Delay between moves (ms)")
+    agent_parser.add_argument("--delay", type=int, default=200, help="Delay between moves (ms)")
     agent_parser.add_argument("--fps", type=int, default=60, help="Render FPS")
 
     args = parser.parse_args()
