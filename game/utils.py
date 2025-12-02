@@ -112,3 +112,94 @@ def _get_empty_cells(board: Board) -> List[Position]:
         for col in range(board.size)
         if board[row, col] == 0
     ]
+
+
+def compress(board: np.ndarray) -> np.ndarray:
+    """
+    Slide all non-zero elements to the left, preserving order.
+
+    Args:
+        board: NxN numpy array.
+
+    Returns:
+        New NxN numpy array with values compressed to the left.
+    """
+    new_board = np.zeros_like(board)
+    rows, cols = board.shape
+
+    # This can be optimized further but let's stick to a clean row-wise impl first
+    for r in range(rows):
+        non_zeros = board[r][board[r] != 0]
+        new_board[r, :len(non_zeros)] = non_zeros
+
+    return new_board
+
+
+def merge(board: np.ndarray) -> Tuple[np.ndarray, int]:
+    """
+    Merge adjacent equal values in each row to the left.
+
+    Args:
+        board: NxN numpy array (already compressed).
+
+    Returns:
+        Tuple of (merged_board, score_gained).
+    """
+    new_board = board.copy()
+    score = 0
+    rows, cols = board.shape
+
+    for r in range(rows):
+        for c in range(cols - 1):
+            if new_board[r, c] != 0 and new_board[r, c] == new_board[r, c + 1]:
+                new_board[r, c] *= 2
+                score += new_board[r, c]
+                new_board[r, c + 1] = 0
+
+    return new_board, score
+
+
+def slide_and_merge(board: np.ndarray, direction: str) -> Tuple[np.ndarray, int]:
+    """
+    Execute a board slide and merge in the given direction.
+
+    Args:
+        board: NxN numpy array.
+        direction: 'UP', 'DOWN', 'LEFT', 'RIGHT'.
+
+    Returns:
+        Tuple of (new_board_array, score_gained).
+    """
+    # Align to LEFT slide for standard processing
+    # UP: Rotate 90 deg counter-clockwise (Top becomes Left)
+    # RIGHT: Flip horizontally (Right becomes Left) or Rotate 180
+    # DOWN: Rotate 90 deg clockwise (Bottom becomes Left)
+    # LEFT: No change
+
+    temp_board = board.copy()
+
+    if direction == 'UP':
+        temp_board = np.rot90(temp_board, 1) # Rotates 90 deg counter-clockwise
+    elif direction == 'RIGHT':
+        temp_board = np.rot90(temp_board, 2) # Rotates 180 deg
+    elif direction == 'DOWN':
+        temp_board = np.rot90(temp_board, 3) # Rotates 270 deg (90 clockwise)
+
+    # 1. Compress (slide left)
+    temp_board = compress(temp_board)
+
+    # 2. Merge
+    temp_board, score = merge(temp_board)
+
+    # 3. Compress again (fill gaps from merges)
+    temp_board = compress(temp_board)
+
+    # Restore orientation
+    if direction == 'UP':
+        temp_board = np.rot90(temp_board, -1) # Rotate back (clockwise)
+    elif direction == 'RIGHT':
+        temp_board = np.rot90(temp_board, -2)
+    elif direction == 'DOWN':
+        temp_board = np.rot90(temp_board, -3)
+
+    return temp_board, score
