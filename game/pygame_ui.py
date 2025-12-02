@@ -507,15 +507,11 @@ class PygameUI:
         if seed is not None:
             env.seed(seed)
 
-        # Initialize game counter from existing logs if logger exists
-        initial_game_count = logger._get_next_game_number("human", seed) if logger else 1
-
         # Game state container to be modified by callback
         state = {
             "board": None,
             "score": 0,
             "step_count": 0,
-            "game_count": initial_game_count - 1,  # Will be incremented to initial_game_count on first reset
             "done": False,
             "waiting_for_reset": False,
             "animation_state": None,  # Dict with 'old_board', 'progress', 'action', 'start_time'
@@ -525,12 +521,11 @@ class PygameUI:
             state["board"], _ = env.reset()
             state["score"] = 0
             state["step_count"] = 0
-            state["game_count"] += 1
             state["done"] = False
             state["waiting_for_reset"] = False
             state["animation_state"] = None
             if logger:
-                logger.start_game(f"human_play_{seed or 'random'}_{state['game_count']}", seed)
+                logger.start_game(seed=seed)
 
         # Initial reset
         reset_game()
@@ -797,15 +792,10 @@ class PygameUI:
         # Use the snapped delay
         delay_ms = speed_steps[initial_idx]
 
-        # Initialize game counter from existing logs if logger exists
-        agent_name = getattr(agent, "__class__", type(agent)).__name__
-        initial_game_count = logger._get_next_game_number(agent_name, seed) if logger else 1
-
         state = {
             "board": None,
             "score": 0,
             "step_count": 0,
-            "game_count": initial_game_count - 1,  # Will be incremented to initial_game_count on first reset
             "done": False,
             "waiting_for_reset": False,
             "last_move_time": pygame.time.get_ticks(),
@@ -819,14 +809,12 @@ class PygameUI:
             state["board"], _ = env.reset()
             state["score"] = 0
             state["step_count"] = 0
-            state["game_count"] += 1
             state["done"] = False
             state["waiting_for_reset"] = False
             state["last_move_time"] = pygame.time.get_ticks()
             state["animation_state"] = None
             if logger:
-                agent_name = getattr(agent, "__class__", type(agent)).__name__
-                logger.start_game(f"{agent_name}_{seed or 'random'}_{state['game_count']}", seed)
+                logger.start_game(seed=seed)
 
         reset_game()
 
