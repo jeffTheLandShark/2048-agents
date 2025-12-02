@@ -101,17 +101,21 @@ class GameEnv:
             - info: StepInfo with additional metadata (score, tile counts, etc.)
         """
         next_state, reward = self.slide(action)
-        done = self.is_game_over(next_state)
+        self._board = next_state
+        self._rewards.append(int(reward))  # Track reward for score calculation
+
+        # Spawn random tile
+        self._board, _ = spawn_random_tile(self._board, self._rng)
+
+        # Check for game over AFTER spawning the new tile
+        done = self.is_game_over(self._board)
+
         info = StepInfo(
             score=self.get_score(),
             tile_counts={},  # Placeholder for tile counts
             heuristics={},  # Placeholder for heuristics
             action_taken=action,
         )
-        self._board = next_state
-        self._rewards.append(int(reward))  # Track reward for score calculation
-        if not done:
-            self._board, _ = spawn_random_tile(self._board, self._rng)
         return self._board, float(reward), done, info
 
     def legal_moves(self, board: Optional[Board] = None) -> List[str]:
