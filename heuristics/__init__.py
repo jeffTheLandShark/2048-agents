@@ -1,6 +1,7 @@
 """Heuristic evaluation functions for 2048."""
 
 from typing import TypedDict
+from heuristics.evaluator import HeuristicEvaluator
 
 
 class HeuristicFeatures(TypedDict):

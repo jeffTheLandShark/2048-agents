@@ -1,7 +1,6 @@
 """Heuristic evaluator for computing weighted board state scores."""
 
 from typing import List, Dict
-from heuristics.features import compute_all_features
 from game import Board
 
 
