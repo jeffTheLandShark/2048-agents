@@ -647,8 +647,8 @@ class PygameUI:
         if board_size != self.board_size:
             print(f"Warning: Log board size ({board_size}) != UI board size ({self.board_size})")
 
-        # Speed steps: 50ms to 400ms in 50ms increments, then 100ms increments up to 1000ms
-        speed_steps = [50, 100, 150, 200, 250, 300, 350, 400, 500, 600, 700, 800, 900, 1000]
+        # Speed steps: 10ms to 400ms in varying increments, then 100ms increments up to 1000ms
+        speed_steps = [10, 20, 50, 100, 150, 200, 250, 300, 350, 400, 500, 600, 700, 800, 900, 1000]
 
         # Find closest initial delay
         initial_delay = int(250 / speed)
@@ -767,7 +767,7 @@ class PygameUI:
             self.config.enable_animations = should_animate
 
             info_text = f"Replay {game_id_disp} ({state['current_step_idx'] + 1}/{len(steps)})"
-            help_text = "Space: pause, Left/Right: step, Up/Down: speed, R: restart"
+            help_text = f"Space: pause, Left/Right: step, Up/Down: speed ({state['step_delay_ms']}ms), R: restart"
             self.render(board, score, info_text=info_text, help_text=help_text, animation_state=state["animation_state"])
 
             # Restore original animation setting
@@ -789,6 +789,14 @@ class PygameUI:
 
         delay_ms = move_delay_ms or self.config.agent_move_delay_ms
 
+        # Speed steps to match replay mode
+        speed_steps = [10, 20, 50, 100, 150, 200, 250, 300, 350, 400, 500, 600, 700, 800, 900, 1000]
+
+        # Find closest initial delay index
+        initial_idx = min(range(len(speed_steps)), key=lambda i: abs(speed_steps[i] - delay_ms))
+        # Use the snapped delay
+        delay_ms = speed_steps[initial_idx]
+
         # Initialize game counter from existing logs if logger exists
         agent_name = getattr(agent, "__class__", type(agent)).__name__
         initial_game_count = logger._get_next_game_number(agent_name, seed) if logger else 1
@@ -802,6 +810,8 @@ class PygameUI:
             "waiting_for_reset": False,
             "last_move_time": pygame.time.get_ticks(),
             "animation_state": None,  # Dict with 'old_board', 'progress', 'action', 'start_time'
+            "current_delay": delay_ms,
+            "speed_idx": initial_idx,
         }
 
         def reset_game():
@@ -824,6 +834,14 @@ class PygameUI:
             if action == "RESET":
                 reset_game()
                 return True
+            elif action == "UP":
+                # Increase speed (decrease delay) -> decrease index
+                state["speed_idx"] = max(0, state["speed_idx"] - 1)
+                state["current_delay"] = speed_steps[state["speed_idx"]]
+            elif action == "DOWN":
+                # Decrease speed (increase delay) -> increase index
+                state["speed_idx"] = min(len(speed_steps) - 1, state["speed_idx"] + 1)
+                state["current_delay"] = speed_steps[state["speed_idx"]]
 
             if state["waiting_for_reset"]:
                 return True
@@ -834,7 +852,10 @@ class PygameUI:
                 return True
 
             current_time = pygame.time.get_ticks()
-            if not state["done"] and (current_time - state["last_move_time"] >= delay_ms):
+            # Dynamically update animation settings based on current delay
+            self.config.enable_animations = state["current_delay"] >= self.config.animation_duration_ms
+
+            if not state["done"] and (current_time - state["last_move_time"] >= state["current_delay"]):
                 legal_moves = env.legal_moves(state["board"])
                 if legal_moves:
                     # Save old board for animation
@@ -895,7 +916,7 @@ class PygameUI:
                     state["board"],
                     state["score"],
                     info_text=f"Agent Play: {agent_name}",
-                    help_text="R: reset, ESC: quit",
+                    help_text=f"R: reset, UP/DOWN: speed ({state['current_delay']}ms), ESC: quit",
                     animation_state=state["animation_state"]
                 )
 
