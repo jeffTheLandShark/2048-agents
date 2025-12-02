@@ -1,11 +1,25 @@
 """Core 2048 game environment with deterministic rules and transitions."""
 
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, TYPE_CHECKING
 from abc import ABC
 import numpy.random as random
 import numpy as np
-from game import ResetInfo, StepInfo, Board, Action, SpawnLocation, Position
-from game.utils import spawn_random_tile, merge_line
+from .board import Board
+from .utils import spawn_random_tile, merge_line
+
+# Import types from parent module (__init__.py) using TYPE_CHECKING to avoid circular import
+if TYPE_CHECKING:
+    from game import ResetInfo, StepInfo, Action, SpawnLocation, Position
+else:
+    # At runtime, import from parent module after it's fully initialized
+    import sys
+    _game_module = sys.modules.get('game')
+    if _game_module:
+        ResetInfo = _game_module.ResetInfo
+        StepInfo = _game_module.StepInfo
+        Action = _game_module.Action
+        SpawnLocation = _game_module.SpawnLocation
+        Position = _game_module.Position
 
 
 class GameEnv:
@@ -48,6 +62,7 @@ class GameEnv:
         self._board = Board(
             np.zeros((self.board_size, self.board_size), dtype=np.int32)
         )
+        self._rewards = []  # Reset score tracking
         # Spawn two initial tiles
         self._board, _ = spawn_random_tile(self._board, self._rng)
         self._board, _ = spawn_random_tile(self._board, self._rng)
@@ -76,7 +91,7 @@ class GameEnv:
 
         axis: bool = movement.col == 0  # True for vertical, False for horizontal
         reverse = (movement.row if axis else movement.col) < 0  # True if moving left/up
-        print("Axis:", axis, "Movement:", movement, "Reverse:", reverse)
+        # print("Axis:", axis, "Movement:", movement, "Reverse:", reverse)
 
         axis_iter = (
             [self._board.array[:, col].tolist() for col in range(self._board.size)]
@@ -121,6 +136,7 @@ class GameEnv:
             action_taken=action,
         )
         self._board = next_state
+        self._rewards.append(int(reward))  # Track reward for score calculation
         if not done:
             self._board, _ = spawn_random_tile(self._board, self._rng)
         return self._board, float(reward), done, info

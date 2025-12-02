@@ -4,16 +4,19 @@ from dataclasses import dataclass
 from typing import TypedDict, List, Dict, Optional
 from enum import Enum
 
-from .board import Board
+from .board import Board, encode_board_log2, decode_board_log2
 
 __all__ = [
     "Board",
+    "GameEnv",
     "Action",
     "Position",
     "SpawnLocation",
     "MergeResult",
     "ResetInfo",
     "StepInfo",
+    "encode_board_log2",
+    "decode_board_log2",
 ]
 
 
@@ -82,3 +85,11 @@ class Action(Enum):
             cls.RIGHT: Position(0, 1),
         }
         return mapping[action]
+
+
+# Delayed imports to avoid circular dependencies
+def __getattr__(name: str):
+    if name == "GameEnv":
+        from .game_env import GameEnv
+        return GameEnv
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
