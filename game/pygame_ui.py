@@ -82,12 +82,22 @@ class PygameUI:
         pygame.display.set_caption("2048")
 
         # Create window
+        self.header_height = 140
         self.screen = pygame.display.set_mode(
-            (self.config.window_size, self.config.window_size + 100)
-        )  # Extra space for score panel
+            (self.config.window_size, self.config.window_size + self.header_height + 20)
+        )  # Extra space for header and bottom margin
         self.clock = pygame.time.Clock()
 
-        # Load fonts
+        self._load_fonts()
+
+        # Calculate board rendering dimensions
+        self.board_padding = 20
+        self.tile_size = (
+            self.config.window_size - 2 * self.board_padding - (self.board_size + 1) * self.config.tile_padding
+        ) // self.board_size
+
+    def _load_fonts(self) -> None:
+        """Load game fonts."""
         try:
             self.font_large = pygame.font.Font(
                 None, self.config.font_size_large
@@ -96,15 +106,10 @@ class PygameUI:
             self.font_small = pygame.font.Font(None, self.config.font_size_small)
         except Exception:
             # Fallback to default fonts if custom fonts fail
-            self.font_large = pygame.font.Font(pygame.font.get_default_font(), self.config.font_size_large)
-            self.font_medium = pygame.font.Font(pygame.font.get_default_font(), self.config.font_size_medium)
-            self.font_small = pygame.font.Font(pygame.font.get_default_font(), self.config.font_size_small)
-
-        # Calculate board rendering dimensions
-        self.board_padding = 20
-        self.tile_size = (
-            self.config.window_size - 2 * self.board_padding - (self.board_size + 1) * self.config.tile_padding
-        ) // self.board_size
+            default_font = pygame.font.get_default_font()
+            self.font_large = pygame.font.Font(default_font, self.config.font_size_large)
+            self.font_medium = pygame.font.Font(default_font, self.config.font_size_medium)
+            self.font_small = pygame.font.Font(default_font, self.config.font_size_small)
 
     def _get_tile_color(self, value: int) -> tuple:
         """Get color for a tile value."""
@@ -236,26 +241,57 @@ class PygameUI:
 
     def _get_tile_position(self, row: int, col: int) -> Tuple[int, int]:
         """Get pixel position for a tile at (row, col)."""
-        board_start_y = 80
         x = (
             self.board_padding
             + self.config.tile_padding
             + col * (self.tile_size + self.config.tile_padding)
         )
         y = (
-            board_start_y
+            self.header_height
             + self.board_padding
             + self.config.tile_padding
             + row * (self.tile_size + self.config.tile_padding)
         )
         return x, y
 
+    def _update_animation(self, state: Dict[str, Any]) -> bool:
+        """
+        Update animation progress.
+
+        Returns:
+            True if animation is still in progress, False otherwise.
+        """
+        if state["animation_state"] is None:
+            return False
+
+        current_time = pygame.time.get_ticks()
+        elapsed = current_time - state["animation_state"]["start_time"]
+        duration = self.config.animation_duration_ms
+        progress = min(1.0, elapsed / duration)
+        state["animation_state"]["progress"] = progress
+
+        if progress >= 1.0:
+            state["animation_state"] = None
+            return False
+
+        return True
+
+    def _should_animate_replay(self, state: Dict[str, Any]) -> bool:
+        """Determine if replay animations should be enabled."""
+        if not state["playing"]:
+            # Step-through mode: always enable
+            return True
+        # Auto-play mode: enable if slow enough
+        return state["step_delay_ms"] >= self.config.animation_duration_ms
+
+
     def render(
         self,
         board: Board,
         score: int,
         info: Optional[StepInfo] = None,
-        mode_text: Optional[str] = None,
+        info_text: Optional[str] = None,
+        help_text: Optional[str] = None,
         skip_flip: bool = False,
         animation_state: Optional[Dict[str, Any]] = None,
     ) -> None:
@@ -266,7 +302,8 @@ class PygameUI:
             board: Current board state as Board instance.
             score: Current game score.
             info: Optional StepInfo with additional metadata to display.
-            mode_text: Optional text to display (e.g., "Human Play", "Replay", "Agent Play").
+            info_text: Optional text to display (e.g., Game ID, Agent Name).
+            help_text: Optional instructions text (e.g., Controls).
             skip_flip: If True, don't call pygame.display.flip() (useful when drawing overlay after).
             animation_state: Optional dict with 'old_board', 'progress', 'action' for animations.
         """
@@ -274,19 +311,24 @@ class PygameUI:
         self.screen.fill(COLORS["background"])
 
         # Render score panel
-        score_y = 10
+        current_y = 10
         score_text = self.font_medium.render(f"Score: {score}", True, COLORS["text_dark"])
-        self.screen.blit(score_text, (20, score_y))
+        self.screen.blit(score_text, (20, current_y))
+        current_y += 40
 
-        if mode_text:
-            mode_text_surface = self.font_small.render(mode_text, True, COLORS["text_dark"])
-            self.screen.blit(mode_text_surface, (20, score_y + 30))
+        if info_text:
+            info_surf = self.font_small.render(info_text, True, COLORS["text_dark"])
+            self.screen.blit(info_surf, (20, current_y))
+            current_y += 30
+
+        if help_text:
+            help_surf = self.font_small.render(help_text, True, COLORS["text_dark"])
+            self.screen.blit(help_surf, (20, current_y))
 
         # Render board background
-        board_start_y = 80
         board_rect = pygame.Rect(
             self.board_padding,
-            board_start_y + self.board_padding,
+            self.header_height + self.board_padding,
             self.config.window_size - 2 * self.board_padding,
             self.config.window_size - 2 * self.board_padding,
         )
@@ -504,19 +546,9 @@ class PygameUI:
                 return True
 
             # Update animation progress if animating
-            if state["animation_state"] is not None:
-                current_time = pygame.time.get_ticks()
-                elapsed = current_time - state["animation_state"]["start_time"]
-                duration = self.config.animation_duration_ms
-                progress = min(1.0, elapsed / duration)
-                state["animation_state"]["progress"] = progress
-
-                # If animation complete, clear animation state
-                if progress >= 1.0:
-                    state["animation_state"] = None
-                else:
-                    # Still animating, block input
-                    return True
+            if self._update_animation(state):
+                # Still animating, block input
+                return True
 
             if action and action in ["UP", "DOWN", "LEFT", "RIGHT"] and not state["done"]:
                 legal_moves = env.legal_moves(state["board"])
@@ -566,13 +598,14 @@ class PygameUI:
         def render():
             if state["waiting_for_reset"]:
                 # Draw board first, then overlay, then flip once
-                self.render(state["board"], state["score"], mode_text="Game Over!", skip_flip=True)
+                self.render(state["board"], state["score"], info_text="Game Over!", skip_flip=True)
                 self._show_game_over(state["score"], state["step_count"])
             else:
                 self.render(
                     state["board"],
                     state["score"],
-                    mode_text="Human Play - Arrow Keys/WASD to move, R to reset, ESC to quit",
+                    info_text="Human Play",
+                    help_text="Arrow Keys/WASD to move, R to reset, ESC to quit",
                     animation_state=state["animation_state"]
                 )
 
@@ -634,30 +667,13 @@ class PygameUI:
 
         def update(action: Optional[str]) -> bool:
             # Update animation progress if animating
-            if state["animation_state"] is not None:
-                current_time = pygame.time.get_ticks()
-                elapsed = current_time - state["animation_state"]["start_time"]
-                duration = self.config.animation_duration_ms
-                progress = min(1.0, elapsed / duration)
-                state["animation_state"]["progress"] = progress
-
-                # If animation complete, clear animation state
-                if progress >= 1.0:
-                    state["animation_state"] = None
-                else:
-                    # Still animating, block auto-advance but allow manual controls
-                    if action not in ["LEFT", "RIGHT", "SPACE", "RESET", "UP", "DOWN"]:
-                        return True
+            if self._update_animation(state):
+                # Still animating, block auto-advance but allow manual controls
+                if action not in ["LEFT", "RIGHT", "SPACE", "RESET", "UP", "DOWN"]:
+                    return True
 
             # Determine if animations should be enabled based on play state
-            # Always enable in step-through mode (paused), conditionally in auto-play
-            should_animate = False
-            if not state["playing"]:
-                # Step-through mode: always enable animations
-                should_animate = True
-            else:
-                # Auto-play mode: enable if step delay >= animation duration
-                should_animate = state["step_delay_ms"] >= self.config.animation_duration_ms
+            should_animate = self._should_animate_replay(state)
 
             # Temporarily override config for this frame
             original_animations = self.config.enable_animations
@@ -744,18 +760,15 @@ class PygameUI:
             state["previous_board"] = board.copy()
 
             # Determine if animations should be enabled
-            should_animate = False
-            if not state["playing"]:
-                should_animate = True  # Always enable in step-through mode
-            else:
-                should_animate = state["step_delay_ms"] >= self.config.animation_duration_ms
+            should_animate = self._should_animate_replay(state)
 
             # Temporarily override config for rendering
             original_animations = self.config.enable_animations
             self.config.enable_animations = should_animate
 
-            mode_text = f"Replay {game_id_disp} ({state['current_step_idx'] + 1}/{len(steps)}) - Space: pause, Left/Right: step, R: restart"
-            self.render(board, score, mode_text=mode_text, animation_state=state["animation_state"])
+            info_text = f"Replay {game_id_disp} ({state['current_step_idx'] + 1}/{len(steps)})"
+            help_text = "Space: pause, Left/Right: step, Up/Down: speed, R: restart"
+            self.render(board, score, info_text=info_text, help_text=help_text, animation_state=state["animation_state"])
 
             # Restore original animation setting
             self.config.enable_animations = original_animations
@@ -816,19 +829,9 @@ class PygameUI:
                 return True
 
             # Update animation progress if animating
-            if state["animation_state"] is not None:
-                current_time = pygame.time.get_ticks()
-                elapsed = current_time - state["animation_state"]["start_time"]
-                duration = self.config.animation_duration_ms
-                progress = min(1.0, elapsed / duration)
-                state["animation_state"]["progress"] = progress
-
-                # If animation complete, clear animation state
-                if progress >= 1.0:
-                    state["animation_state"] = None
-                else:
-                    # Still animating, don't process moves yet
-                    return True
+            if self._update_animation(state):
+                # Still animating, don't process moves yet
+                return True
 
             current_time = pygame.time.get_ticks()
             if not state["done"] and (current_time - state["last_move_time"] >= delay_ms):
@@ -884,19 +887,24 @@ class PygameUI:
         def render():
             if state["waiting_for_reset"]:
                 # Draw board first, then overlay, then flip once
-                self.render(state["board"], state["score"], mode_text="Game Over!", skip_flip=True)
+                self.render(state["board"], state["score"], info_text="Game Over!", skip_flip=True)
                 self._show_game_over(state["score"], state["step_count"])
             else:
                 agent_name = getattr(agent, "__class__", type(agent)).__name__
-                mode_text = f"Agent Play: {agent_name} - R: reset, ESC: quit"
-                self.render(state["board"], state["score"], mode_text=mode_text, animation_state=state["animation_state"])
+                self.render(
+                    state["board"],
+                    state["score"],
+                    info_text=f"Agent Play: {agent_name}",
+                    help_text="R: reset, ESC: quit",
+                    animation_state=state["animation_state"]
+                )
 
         self.run_loop(update, render)
 
     def _show_game_over(self, score: int, steps: int) -> None:
         """Display game over message."""
         # Overlay semi-transparent surface
-        overlay = pygame.Surface((self.config.window_size, self.config.window_size + 100))
+        overlay = pygame.Surface(self.screen.get_size())
         overlay.set_alpha(200)
         overlay.fill((0, 0, 0))
         self.screen.blit(overlay, (0, 0))
@@ -908,7 +916,7 @@ class PygameUI:
         restart_text = self.font_small.render("Press R to restart or ESC to quit", True, COLORS["text_light"])
 
         center_x = self.config.window_size // 2
-        y_offset = (self.config.window_size + 100) // 2 - 60
+        y_offset = self.screen.get_height() // 2 - 60
 
         self.screen.blit(game_over_text, game_over_text.get_rect(center=(center_x, y_offset)))
         self.screen.blit(score_text, score_text.get_rect(center=(center_x, y_offset + 50)))
