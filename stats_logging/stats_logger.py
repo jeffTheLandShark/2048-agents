@@ -48,16 +48,15 @@ class StatsLogger:
         # Current game state
         self._current_game: Optional[GameLog] = None
 
-    def _get_next_game_number(self, agent_name: str, seed: Optional[int]) -> int:
+    def _get_next_game_number(self, seed: Optional[int]) -> int:
         """
         Find the next game number by reading existing logs.
 
-        Parses existing game IDs in the format: {agent_name}_{seed}_{number}
+        Parses existing game IDs in the format: {agent_name}_{number}
         and returns the next available number.
 
         Args:
-            agent_name: Name of the agent.
-            seed: Optional seed value (or 'random' if None).
+            seed: Optional seed value (ignored for numbering).
 
         Returns:
             Next game number (1 if no existing games found).
@@ -65,8 +64,8 @@ class StatsLogger:
         if not self.log_file.exists():
             return 1
 
-        seed_str = str(seed) if seed is not None else "random"
-        pattern = re.compile(rf"^{re.escape(agent_name)}_{re.escape(seed_str)}_(\d+)$")
+        # Pattern: agent_name_123
+        pattern = re.compile(rf"^{re.escape(self.agent_name)}_(\d+)$")
         max_number = 0
 
         try:
@@ -82,14 +81,18 @@ class StatsLogger:
 
         return max_number + 1
 
-    def start_game(self, game_id: str, seed: Optional[int] = None) -> None:
+    def start_game(self, game_id: Optional[str] = None, seed: Optional[int] = None) -> None:
         """
         Start logging a new game.
 
         Args:
-            game_id: Unique identifier for this game.
+            game_id: Unique identifier for this game. If None, auto-generated.
             seed: Optional random seed used for this game.
         """
+        if game_id is None:
+            next_num = self._get_next_game_number(seed)
+            game_id = f"{self.agent_name}_{next_num}"
+
         self._current_game = GameLog(
             game_id=game_id,
             agent=self.agent_name,
@@ -174,3 +177,4 @@ class StatsLogger:
         if self._file:
             self._file.close()
             self._file = None
+

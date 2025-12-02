@@ -1,5 +1,6 @@
 """Heuristic evaluator for computing weighted board state scores."""
 
+import numpy as np
 from typing import Dict
 from game import Board
 from heuristics.features import compute_all_features
@@ -37,7 +38,12 @@ class HeuristicEvaluator:
         score = 0.0
         for name, value in features.items():
             if name in self.weights:
-                score += self.weights[name] * value
+                # Apply transformation for specific features if needed
+                val = value
+                if name == "max_tile" and value > 0:
+                    val = float(np.log2(value))
+
+                score += self.weights[name] * val
         return score
 
     def get_weights(self) -> Dict[str, float]:
