@@ -20,7 +20,7 @@ class RandomAgent(Agent):
         Args:
             seed: Optional random seed for reproducibility.
         """
-        raise NotImplementedError
+        self._rng = random.default_rng(seed)
 
     def choose_action(self, state: Board, legal_moves: List[str]) -> str:
         """
@@ -33,5 +33,7 @@ class RandomAgent(Agent):
         Returns:
             Randomly selected action from legal_moves.
         """
-        raise NotImplementedError
+        if not legal_moves:
+            raise ValueError("No legal moves available")
+        return self._rng.choice(legal_moves)
 
