@@ -1,22 +1,54 @@
 """ETL utilities for converting raw JSONL logs to Parquet tables."""
 
-from typing import List, Optional
+from typing import List, Optional, Generator, Any
 from pathlib import Path
+import json
 import pandas as pd
 from stats_logging import GameLog
 
 
-def load_jsonl_logs(log_file: Path) -> List[GameLog]:
+def load_jsonl_logs(log_file: Path) -> Generator[GameLog, None, None]:
     """
-    Load all game records from a JSONL log file.
+    Yield game records one by one from a JSONL log file.
+    Memory efficient for large files.
 
     Args:
         log_file: Path to JSONL file (one JSON object per line).
 
-    Returns:
-        List of GameLog dictionaries.
+    Yields:
+        GameLog dictionaries one at a time.
     """
-    raise NotImplementedError
+    log_file = Path(log_file)
+    if not log_file.exists():
+        return
+
+    with open(log_file, "r", encoding="utf-8") as f:
+        for line_num, line in enumerate(f):
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                yield json.loads(line)
+            except json.JSONDecodeError as e:
+                print(f"Warning: Skipping invalid JSON at line {line_num + 1} in {log_file}: {e}")
+
+
+def get_game_by_id(log_file: Path, game_id: str) -> Optional[GameLog]:
+    """
+    Find a specific game log by its game_id without loading the whole file.
+    Streams through the file until the matching ID is found.
+
+    Args:
+        log_file: Path to the JSONL log file.
+        game_id: The unique identifier of the game to find.
+
+    Returns:
+        The GameLog if found, else None.
+    """
+    for game_log in load_jsonl_logs(log_file):
+        if game_log.get("game_id") == game_id:
+            return game_log
+    return None
 
 
 def create_games_summary_table(logs: List[GameLog]) -> pd.DataFrame:
@@ -84,4 +116,3 @@ def process_logs_to_parquet(
         tile_counts_name: Filename for tile counts table.
     """
     raise NotImplementedError
-

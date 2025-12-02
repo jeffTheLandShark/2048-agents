@@ -3,9 +3,11 @@
 from typing import List, Dict, Any, Optional
 from pathlib import Path
 import json
-from stats_logging import GameSummary
+import re
+from stats_logging import GameSummary, GameLog, StepLog
+from stats_logging.etl import load_jsonl_logs
 from heuristics import HeuristicFeatures
-from game import Board
+from game import Board, encode_board_log2
 
 
 class StatsLogger:
@@ -32,7 +34,53 @@ class StatsLogger:
             board_size: Size of the game board.
             config: Optional configuration dictionary to include in logs.
         """
-        raise NotImplementedError
+        self.log_file = Path(log_file)
+        self.agent_name = agent_name
+        self.board_size = board_size
+        self.config = config or {}
+
+        # Ensure directory exists
+        self.log_file.parent.mkdir(parents=True, exist_ok=True)
+
+        # Open file in append mode
+        self._file = open(self.log_file, "a", encoding="utf-8")
+
+        # Current game state
+        self._current_game: Optional[GameLog] = None
+
+    def _get_next_game_number(self, agent_name: str, seed: Optional[int]) -> int:
+        """
+        Find the next game number by reading existing logs.
+
+        Parses existing game IDs in the format: {agent_name}_{seed}_{number}
+        and returns the next available number.
+
+        Args:
+            agent_name: Name of the agent.
+            seed: Optional seed value (or 'random' if None).
+
+        Returns:
+            Next game number (1 if no existing games found).
+        """
+        if not self.log_file.exists():
+            return 1
+
+        seed_str = str(seed) if seed is not None else "random"
+        pattern = re.compile(rf"^{re.escape(agent_name)}_{re.escape(seed_str)}_(\d+)$")
+        max_number = 0
+
+        try:
+            for game_log in load_jsonl_logs(self.log_file):
+                game_id = game_log.get("game_id", "")
+                match = pattern.match(game_id)
+                if match:
+                    number = int(match.group(1))
+                    max_number = max(max_number, number)
+        except Exception:
+            # If there's any error reading the file, start from 1
+            return 1
+
+        return max_number + 1
 
     def start_game(self, game_id: str, seed: Optional[int] = None) -> None:
         """
@@ -42,7 +90,15 @@ class StatsLogger:
             game_id: Unique identifier for this game.
             seed: Optional random seed used for this game.
         """
-        raise NotImplementedError
+        self._current_game = GameLog(
+            game_id=game_id,
+            agent=self.agent_name,
+            board_size=self.board_size,
+            seed=seed,
+            config=self.config,
+            steps=[],
+            summary=None # Will be set at end_game
+        )
 
     def log_step(
         self,
@@ -68,7 +124,21 @@ class StatsLogger:
             heuristics: HeuristicFeatures dictionary with feature values.
             done: Whether game is over.
         """
-        raise NotImplementedError
+        if self._current_game is None:
+            raise RuntimeError("Cannot log step: no game started. Call start_game() first.")
+
+        step_log = StepLog(
+            t=t,
+            board=encode_board_log2(board),
+            action=action,
+            reward=reward,
+            score=score,
+            tile_counts=tile_counts,
+            heuristics=heuristics,
+            done=done
+        )
+
+        self._current_game["steps"].append(step_log)
 
     def end_game(self, summary: GameSummary) -> None:
         """
@@ -82,13 +152,25 @@ class StatsLogger:
                      - final_tile_counts: Final tile distribution
                      - final_heuristics: Final heuristic values
         """
-        raise NotImplementedError
+        if self._current_game is None:
+            raise RuntimeError("Cannot end game: no game started.")
+
+        self._current_game["summary"] = summary
+
+        # Write to file as a single line JSON
+        json.dump(self._current_game, self._file)
+        self._file.write("\n")
+        self.flush()
+
+        self._current_game = None
 
     def flush(self) -> None:
         """Flush any buffered writes to disk."""
-        raise NotImplementedError
+        if self._file:
+            self._file.flush()
 
     def close(self) -> None:
         """Close log file and cleanup resources."""
-        raise NotImplementedError
-
+        if self._file:
+            self._file.close()
+            self._file = None
