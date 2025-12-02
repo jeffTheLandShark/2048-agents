@@ -21,8 +21,8 @@ from game import GameEnv
 from game.pygame_ui import run_human_ui, run_replay_from_log, run_agent, UIConfig
 from stats_logging import StatsLogger
 from agents.random_agent import RandomAgent
+from agents.expectimax import ExpectimaxAgent
 # Import other agents as needed/available
-# from agents.expectimax import ExpectimaxAgent
 # from agents.mcts import MCTSAgent
 
 
@@ -95,10 +95,12 @@ def main():
         if args.agent == "random":
             agent = RandomAgent(seed=args.seed)
         elif args.agent == "expectimax":
-            # TODO: Instantiate Expectimax when available
-            # agent = ExpectimaxAgent(...)
-            print("Expectimax agent not yet fully integrated in launcher. Using RandomAgent.")
-            agent = RandomAgent(seed=args.seed)
+            # Instantiate Expectimax
+            agent = ExpectimaxAgent(
+                depth_limit=3,  # Reasonable default for real-time play
+                time_limit_ms=1000,  # 1 second limit per move
+                use_iterative_deepening=True
+            )
         elif args.agent == "mcts":
             # TODO: Instantiate MCTS when available
             # agent = MCTSAgent(...)
