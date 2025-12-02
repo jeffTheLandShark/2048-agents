@@ -1,7 +1,8 @@
 """Heuristic evaluator for computing weighted board state scores."""
 
-from typing import List, Dict
+from typing import Dict
 from game import Board
+from heuristics.features import compute_all_features
 
 
 class HeuristicEvaluator:
@@ -20,7 +21,7 @@ class HeuristicEvaluator:
             weights: Dictionary mapping feature names to their weights.
                     Example: {"empty": 2.7, "monotonicity": 1.0, "smoothness": 0.1}
         """
-        raise NotImplementedError
+        self.weights = weights
 
     def evaluate(self, board: Board) -> float:
         """
@@ -32,7 +33,12 @@ class HeuristicEvaluator:
         Returns:
             Heuristic score H(s) = Σ w_i * f_i.
         """
-        raise NotImplementedError
+        features = compute_all_features(board)
+        score = 0.0
+        for name, value in features.items():
+            if name in self.weights:
+                score += self.weights[name] * value
+        return score
 
     def get_weights(self) -> Dict[str, float]:
         """
@@ -41,7 +47,7 @@ class HeuristicEvaluator:
         Returns:
             Dictionary of current weights.
         """
-        raise NotImplementedError
+        return self.weights.copy()
 
     def set_weights(self, weights: Dict[str, float]) -> None:
         """
@@ -50,5 +56,4 @@ class HeuristicEvaluator:
         Args:
             weights: Dictionary mapping feature names to new weights.
         """
-        raise NotImplementedError
-
+        self.weights = weights.copy()

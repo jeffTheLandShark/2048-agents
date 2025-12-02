@@ -1,10 +1,19 @@
 """Heuristic feature computation functions for 2048 board evaluation."""
 
-from typing import List, TypedDict, Dict
+from typing import List, TypedDict, Dict, Any
 import numpy as np
-from heuristics import HeuristicFeatures
 from stats_logging import GameSummary, TileCounts
 from game import Board
+
+
+class HeuristicFeatures(TypedDict):
+    """Heuristic feature values for a board state."""
+    empty: float
+    monotonicity: float
+    smoothness: float
+    merge_potential: float
+    max_tile: float
+    sum_tiles: float
 
 
 def compute_tile_counts(board: Board) -> TileCounts:
