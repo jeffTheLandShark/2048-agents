@@ -1,13 +1,12 @@
 """Pygame UI for human play, replay visualization, and live agent play."""
 
 import pygame
-import json
 from typing import Optional, List, Dict, Any, Callable, Tuple
 from pathlib import Path
 from dataclasses import dataclass
 from game import StepInfo, Board, GameEnv, decode_board_log2
 from agents import Agent
-from stats_logging import StatsLogger, GameLog, StepLog, GameSummary
+from stats_logging import StatsLogger, GameLog
 from stats_logging.etl import load_jsonl_logs, get_game_by_id
 from heuristics.features import compute_all_features, compute_tile_counts, create_game_summary
 import numpy as np
@@ -959,8 +958,6 @@ def run_human_ui(
         config: Optional UI configuration.
     """
     if env is None:
-        from game import GameEnv
-
         env = GameEnv(board_size=board_size, seed=seed)
 
     ui = PygameUI(board_size=board_size, config=config)
@@ -1022,8 +1019,6 @@ def run_agent(
         config: Optional UI configuration.
     """
     if env is None:
-        from game import GameEnv
-
         env = GameEnv(board_size=board_size, seed=seed)
 
     # Auto-enable animations for agent games if move delay > animation duration

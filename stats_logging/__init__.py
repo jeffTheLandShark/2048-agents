@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from typing import TypedDict, List, Dict, Optional, Any
-
+from .stats_logger import StatsLogger
 
 __all__ = [
     "StatsLogger",
@@ -71,5 +71,6 @@ class ExperimentSummary(TypedDict, total=False):
 def __getattr__(name: str):
     if name == "StatsLogger":
         from .stats_logger import StatsLogger
+
         return StatsLogger
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
