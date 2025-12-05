@@ -2,7 +2,7 @@
 
 from typing import Optional, Dict, Any
 from pathlib import Path
-from game.game_env import GameEnv
+from game import GameEnv
 from agents import Agent
 from logging import StatsLogger, GameSummary, ExperimentSummary
 

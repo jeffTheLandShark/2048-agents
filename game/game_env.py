@@ -1,11 +1,25 @@
 """Core 2048 game environment with deterministic rules and transitions."""
 
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, TYPE_CHECKING
 from abc import ABC
 import numpy.random as random
 import numpy as np
-from game import ResetInfo, StepInfo, Board, Action, SpawnLocation, Position
-from game.utils import spawn_random_tile, merge_line
+from .board import Board
+from .utils import spawn_random_tile, slide_and_merge
+
+# Import types from parent module (__init__.py) using TYPE_CHECKING to avoid circular import
+if TYPE_CHECKING:
+    from game import ResetInfo, StepInfo, Action, SpawnLocation, Position
+else:
+    # At runtime, import from parent module after it's fully initialized
+    import sys
+    _game_module = sys.modules.get('game')
+    if _game_module:
+        ResetInfo = _game_module.ResetInfo
+        StepInfo = _game_module.StepInfo
+        Action = _game_module.Action
+        SpawnLocation = _game_module.SpawnLocation
+        Position = _game_module.Position
 
 
 class GameEnv:
@@ -48,6 +62,7 @@ class GameEnv:
         self._board = Board(
             np.zeros((self.board_size, self.board_size), dtype=np.int32)
         )
+        self._rewards = []  # Reset score tracking
         # Spawn two initial tiles
         self._board, _ = spawn_random_tile(self._board, self._rng)
         self._board, _ = spawn_random_tile(self._board, self._rng)
@@ -68,34 +83,7 @@ class GameEnv:
         Returns:
             New Board instance after sliding.
         """
-        movement = Action.direction(Action[action])  # Get movement vector
-        if (movement.row == 0 and movement.col == 0) or (
-            movement.row != 0 and movement.col != 0
-        ):  # if no movement or diagonal
-            raise ValueError(f"Invalid action for sliding: {action}")
-
-        axis: bool = movement.col == 0  # True for vertical, False for horizontal
-        reverse = (movement.row if axis else movement.col) < 0  # True if moving left/up
-        print("Axis:", axis, "Movement:", movement, "Reverse:", reverse)
-
-        axis_iter = (
-            [self._board.array[:, col].tolist() for col in range(self._board.size)]
-            if axis
-            else self._board.to_list()
-        )  # Get rows or columns
-
-        score_gained = 0
-        new_lines = []
-        for line in axis_iter:
-            merged = merge_line(line, reverse=reverse)
-            new_lines.append(merged.merged_line)
-            score_gained += merged.score_gained
-        new_array = (
-            np.array(new_lines, dtype=np.int32).T
-            if axis
-            else np.array(new_lines, dtype=np.int32)
-        )
-
+        new_array, score_gained = slide_and_merge(self._board.array, action)
         return Board(new_array), score_gained
 
     def step(self, action: str) -> Tuple[Board, float, bool, StepInfo]:
@@ -113,16 +101,21 @@ class GameEnv:
             - info: StepInfo with additional metadata (score, tile counts, etc.)
         """
         next_state, reward = self.slide(action)
-        done = self.is_game_over(next_state)
+        self._board = next_state
+        self._rewards.append(int(reward))  # Track reward for score calculation
+
+        # Spawn random tile
+        self._board, _ = spawn_random_tile(self._board, self._rng)
+
+        # Check for game over AFTER spawning the new tile
+        done = self.is_game_over(self._board)
+
         info = StepInfo(
             score=self.get_score(),
             tile_counts={},  # Placeholder for tile counts
             heuristics={},  # Placeholder for heuristics
             action_taken=action,
         )
-        self._board = next_state
-        if not done:
-            self._board, _ = spawn_random_tile(self._board, self._rng)
         return self._board, float(reward), done, info
 
     def legal_moves(self, board: Optional[Board] = None) -> List[str]:
