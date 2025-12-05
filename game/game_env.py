@@ -13,7 +13,8 @@ if TYPE_CHECKING:
 else:
     # At runtime, import from parent module after it's fully initialized
     import sys
-    _game_module = sys.modules.get('game')
+
+    _game_module = sys.modules.get("game")
     if _game_module:
         ResetInfo = _game_module.ResetInfo
         StepInfo = _game_module.StepInfo
@@ -32,6 +33,7 @@ class GameEnv:
 
     def __init__(
         self,
+        board: Board | None = None,
         board_size: int = 4,
         seed: Optional[int] = None,
         rng: Optional[random.Generator] = None,
@@ -44,13 +46,21 @@ class GameEnv:
             seed: Random seed for deterministic behavior. If None, uses system randomness.
             rng: Optional RNG generator. If provided, seed is ignored.
         """
-        self.board_size = board_size
+        self._rewards: list[int] = []
+
         if rng is not None:
             self._rng = rng
         else:
             self.seed(seed)
-        self._board: Board = Board(np.zeros((board_size, board_size), dtype=np.int32))
-        self._rewards: list[int] = []
+
+        if board is not None:
+            self._board = board
+            self.board_size = board.array.shape[0]
+        else:
+            self._board: Board = Board(
+                np.zeros((board_size, board_size), dtype=np.int32)
+            )
+            self.board_size = board_size
 
     def reset(self) -> Tuple[Board, ResetInfo]:
         """

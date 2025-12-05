@@ -20,11 +20,11 @@ def test_gameenv_reset_spawns_two_tiles_and_is_deterministic():
 
 
 def test_slide_left_and_right_behavior():
-    env = GameEnv(board_size=4)
     # set a board with a merge possibility in the first row
     arr = np.zeros((4, 4), dtype=np.int32)
     arr[0] = [2, 2, 0, 0]
-    env._board = Board(arr)
+    board = Board(arr)
+    env = GameEnv(board)
 
     left_board, left_score = env.slide("LEFT")
     # moving left (reverse True in merge_line) should produce [4,0,0,0]
@@ -40,9 +40,9 @@ def test_slide_left_and_right_behavior():
 
 
 def test_legal_moves_detection():
-    env = GameEnv(board_size=2)
     # full board with no merges
-    env._board = Board(np.array([[2, 4], [8, 16]], dtype=np.int32))
+    board = Board(np.array([[2, 4], [8, 16]], dtype=np.int32))
+    env = GameEnv(board)
     assert env.legal_moves(env._board) == []
 
     # a board with a possible merge should list moves
