@@ -4,7 +4,7 @@ import time
 import numpy as np
 from typing import List, Dict, Optional, Tuple
 from agents import Agent
-from game import Board
+from game_2048 import Board
 from heuristics.evaluator import HeuristicEvaluator
 from game_2048.utils import slide_and_merge
 

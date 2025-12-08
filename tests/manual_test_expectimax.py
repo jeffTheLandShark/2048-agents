@@ -1,6 +1,6 @@
 
 import numpy as np
-from game import Board
+from game_2048 import Board
 from agents.expectimax import ExpectimaxAgent
 
 def test_expectimax_run():

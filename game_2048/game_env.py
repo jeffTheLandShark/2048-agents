@@ -9,12 +9,12 @@ from .utils import spawn_random_tile, slide_and_merge
 
 # Import types from parent module (__init__.py) using TYPE_CHECKING to avoid circular import
 if TYPE_CHECKING:
-    from game import ResetInfo, StepInfo, Action, SpawnLocation, Position
+    from game_2048 import ResetInfo, StepInfo, Action, SpawnLocation, Position
 else:
     # At runtime, import from parent module after it's fully initialized
     import sys
 
-    _game_module = sys.modules.get("game")
+    _game_module = sys.modules.get("game_2048")
     if _game_module:
         ResetInfo = _game_module.ResetInfo
         StepInfo = _game_module.StepInfo

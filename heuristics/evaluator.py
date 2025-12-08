@@ -2,7 +2,7 @@
 
 import numpy as np
 from typing import Dict
-from game import Board
+from game_2048 import Board
 from heuristics.features import compute_all_features
 
 

@@ -3,7 +3,7 @@
 from typing import List, Optional
 import numpy.random as random
 from agents import Agent
-from game import Board
+from game_2048 import Board
 
 
 class RandomAgent(Agent):
@@ -36,4 +36,3 @@ class RandomAgent(Agent):
         if not legal_moves:
             raise ValueError("No legal moves available")
         return self._rng.choice(legal_moves)
-

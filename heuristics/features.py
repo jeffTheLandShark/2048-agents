@@ -3,7 +3,7 @@
 from typing import List, TypedDict, Dict, Any
 import numpy as np
 from stats_logging import GameSummary, TileCounts
-from game import Board
+from game_2048 import Board
 
 
 class HeuristicFeatures(TypedDict):

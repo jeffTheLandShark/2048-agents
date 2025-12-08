@@ -7,7 +7,7 @@ import re
 from stats_logging import GameSummary, GameLog, StepLog
 from stats_logging.etl import load_jsonl_logs
 from heuristics import HeuristicFeatures
-from game import Board, encode_board_log2
+from game_2048 import Board, encode_board_log2
 
 
 class StatsLogger:
