@@ -1,6 +1,6 @@
 import numpy as np
 
-from game.board import (
+from game_2048.board import (
     Board,
     encode_board_flat,
     decode_board_flat,

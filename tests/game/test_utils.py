@@ -1,8 +1,8 @@
 import numpy as np
 from numpy.random import default_rng
 
-from game.utils import merge_line, spawn_random_tile, _get_empty_cells
-from game import Board
+from game_2048.utils import merge_line, spawn_random_tile, _get_empty_cells
+from game_2048 import Board
 
 
 def test_merge_line_simple_no_reverse():

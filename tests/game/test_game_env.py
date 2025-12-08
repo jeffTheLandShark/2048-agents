@@ -1,9 +1,9 @@
 import numpy as np
 from numpy.random import default_rng
 
-from game.game_env import GameEnv
-from game import Board
-from game.board import encode_board_flat
+from game_2048.game_env import GameEnv
+from game_2048 import Board
+from game_2048.board import encode_board_flat
 
 
 def test_gameenv_reset_spawns_two_tiles_and_is_deterministic():

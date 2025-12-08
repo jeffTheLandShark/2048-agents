@@ -5,11 +5,9 @@ from typing import TypedDict, List, Dict, Optional
 from enum import Enum
 
 from .board import Board, encode_board_log2, decode_board_log2
-from .game_env import GameEnv
 
 __all__ = [
     "Board",
-    "GameEnv",
     "Action",
     "Position",
     "SpawnLocation",

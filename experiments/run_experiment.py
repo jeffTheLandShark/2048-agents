@@ -2,9 +2,9 @@
 
 from typing import Optional, Dict, Any
 from pathlib import Path
-from game import GameEnv
+from game_2048.game_env import GameEnv
 from agents import Agent
-from logging import StatsLogger, GameSummary, ExperimentSummary
+from stats_logging import StatsLogger, GameSummary, ExperimentSummary
 
 
 def run_experiment(
@@ -14,7 +14,7 @@ def run_experiment(
     log_file: Optional[Path] = None,
     agent_name: Optional[str] = None,
     config: Optional[Dict[str, Any]] = None,
-    seed: Optional[int] = None
+    seed: Optional[int] = None,
 ) -> ExperimentSummary:
     """
     Run an experiment: execute N games with an agent and optionally log results.
@@ -44,7 +44,7 @@ def run_single_game(
     env: GameEnv,
     logger: Optional[StatsLogger] = None,
     game_id: Optional[str] = None,
-    seed: Optional[int] = None
+    seed: Optional[int] = None,
 ) -> GameSummary:
     """
     Run a single game with an agent.
@@ -65,4 +65,3 @@ def run_single_game(
         - final_heuristics: Final heuristic values
     """
     raise NotImplementedError
-
