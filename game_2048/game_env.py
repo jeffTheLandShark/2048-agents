@@ -185,3 +185,27 @@ class GameEnv:
             seed: Random seed value. If None, resets to non-deterministic.
         """
         self._rng = random.default_rng(seed)
+
+    def copy(self) -> "GameEnv":
+        """
+        Create a deep copy of the game environment.
+
+        Returns:
+            New GameEnv instance with copied state and RNG.
+        """
+        new_env = GameEnv(
+            board=self._board.copy(),
+            board_size=self.board_size,
+            rng=self._rng,
+        )
+        new_env._rewards = self._rewards.copy()
+        return new_env
+
+    def get_move_count(self) -> int:
+        """
+        Get the number of moves made so far.
+
+        Returns:
+            Number of moves taken in the game.
+        """
+        return len(self._rewards)
