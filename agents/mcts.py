@@ -2,7 +2,21 @@
 
 from typing import List, Optional
 from agents import Agent
-from game import Board
+from game_2048 import Board
+from game_2048.game_env import GameEnv
+
+from dataclasses import dataclass
+
+
+@dataclass
+class MCTSNode:
+    state: Board
+    parent: Optional["MCTSNode"]
+    children: List["MCTSNode"]
+    visits: int
+    wins: float
+    untried_actions: List[str]
+    prev_move: Optional[str] = None
 
 
 class MCTSAgent(Agent):
@@ -14,10 +28,10 @@ class MCTSAgent(Agent):
 
     def __init__(
         self,
-        num_simulations: int = 1000,
-        exploration_constant: float = 1.414,
+        num_simulations: int = 4,
+        exploration_constant: float = 1.414,  # sqrt(2)
         rollout_policy: str = "random",
-        time_limit_ms: Optional[int] = None
+        time_limit_ms: Optional[int] = None,
     ) -> None:
         """
         Initialize MCTS agent.
@@ -28,7 +42,10 @@ class MCTSAgent(Agent):
             rollout_policy: Policy for rollouts ("random" or "heuristic").
             time_limit_ms: Optional time limit per move in milliseconds.
         """
-        raise NotImplementedError
+        self.num_simulations = num_simulations
+        self.exploration_constant = exploration_constant
+        self.rollout_policy = rollout_policy
+        self.time_limit_ms = time_limit_ms
 
     def choose_action(self, state: Board, legal_moves: List[str]) -> str:
         """
@@ -41,5 +58,78 @@ class MCTSAgent(Agent):
         Returns:
             Best action according to MCTS search.
         """
+        root: MCTSNode = MCTSNode(
+            state=state,
+            parent=None,
+            children=[],
+            visits=0,
+            wins=0.0,
+            untried_actions=legal_moves.copy(),
+        )
+
+        for _ in range(self.num_simulations):
+            node = root
+            board_env = GameEnv(state)
+
+            # Selection
+            while node.untried_actions == [] and node.children != []:
+                # select
+                node = self._selection(node)
+                # get the action that led to this node
+                agent_action = node.prev_move
+                # step in the environment
+                board_env.step(agent_action)
+
+            # Expansion
+            if node.untried_actions:
+                # expand
+                node = self._expansion(node)
+                # step in the environment
+                board_env.step(node.prev_move)
+
+            # Simulation
+            reward = self._simulation(board_env)
+
+            # Backpropagation
+            self._backpropagation(node, reward)
+
+        # Choose the best action from the root's children
+        best_child = max(root.children, key=lambda c: c.visits)
+        return best_child.state.last_move
+
+    def _selection(self, node: MCTSNode) -> MCTSNode:
+        """Select a child node using UCT."""
+        total_simulations = sum(child.visits for child in node.children)
+        uct_values = [
+            self._uct_value(total_simulations, child.wins, child.visits)
+            for child in node.children
+        ]
+        best_index = uct_values.index(max(uct_values))
+        return node.children[best_index]
+
+    def _expansion(self, node: MCTSNode) -> MCTSNode:
+        """Expand the node by adding a new child."""
         raise NotImplementedError
 
+    def _simulation(self, state: Board) -> float:
+        """Perform a rollout from the given state and return the reward."""
+        raise NotImplementedError
+
+    def _backpropagation(self, node: MCTSNode, reward: float) -> None:
+        """Backpropagate the reward up the tree."""
+        raise NotImplementedError
+
+    def _uct_value(
+        self, total_simulations: int, node_wins: float, node_visits: int
+    ) -> float:
+        """Calculate the UCT value for a node.
+        UCT = (wins / visits) + C * sqrt(ln(total_simulations) / visits)
+        """
+        if node_visits == 0:
+            return float("inf")
+        exploitation = node_wins / node_visits
+        exploration = (
+            self.exploration_constant
+            * ((2 * (total_simulations).bit_length()) / node_visits) ** 0.5
+        )
+        return exploitation + exploration
