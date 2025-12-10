@@ -42,6 +42,8 @@ class HeuristicEvaluator:
                 val = value
                 if name == "max_tile" and value > 0:
                     val = float(np.log2(value))
+                if name == "empty" and value > 0:
+                    val = float(value/board.size**2)
 
                 score += self.weights[name] * val
         return score

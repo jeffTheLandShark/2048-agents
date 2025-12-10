@@ -98,7 +98,7 @@ def main():
             # Instantiate Expectimax
             agent = ExpectimaxAgent(
                 depth_limit=3,  # Reasonable default for real-time play
-                time_limit_ms=1000,  # 1 second limit per move
+                time_limit_ms=250,  # 1 second limit per move
                 use_iterative_deepening=True
             )
         elif args.agent == "mcts":

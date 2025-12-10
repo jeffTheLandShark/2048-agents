@@ -11,7 +11,7 @@ from game.utils import slide_and_merge
 # Default weights (guessed/estimated)
 DEFAULT_WEIGHTS = {
     "empty": 30.0,
-    "monotonicity": 15.0,
+    "monotonicity": 35.0,
     "smoothness": 5.0,
     "merge_potential": 10.0,
     "max_tile": 1.0,
