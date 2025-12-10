@@ -1,7 +1,7 @@
 
 import unittest
 import numpy as np
-from game.utils import slide_and_merge
+from game_2048.utils import slide_and_merge
 
 class TestLogic(unittest.TestCase):
     def test_simple_merge_right(self):

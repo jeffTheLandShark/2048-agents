@@ -4,9 +4,9 @@ import time
 import numpy as np
 from typing import List, Dict, Optional, Tuple
 from agents import Agent
-from game import Board
+from game_2048 import Board
 from heuristics.evaluator import HeuristicEvaluator
-from game.utils import slide_and_merge
+from game_2048.utils import slide_and_merge
 
 # Default weights (guessed/estimated)
 DEFAULT_WEIGHTS = {
@@ -32,7 +32,7 @@ class ExpectimaxAgent(Agent):
         depth_limit: int = 7,
         time_limit_ms: Optional[int] = None,
         heuristic_weights: Optional[Dict[str, float]] = None,
-        use_iterative_deepening: bool = True
+        use_iterative_deepening: bool = True,
     ) -> None:
         """
         Initialize Expectimax agent.
@@ -44,7 +44,9 @@ class ExpectimaxAgent(Agent):
                               If None, uses default best-known weights.
             use_iterative_deepening: Whether to use iterative deepening search.
         """
-        weights = heuristic_weights if heuristic_weights is not None else DEFAULT_WEIGHTS
+        weights = (
+            heuristic_weights if heuristic_weights is not None else DEFAULT_WEIGHTS
+        )
         self.evaluator = HeuristicEvaluator(weights)
         self.depth_limit = depth_limit
         self.time_limit_ms = time_limit_ms
@@ -119,12 +121,12 @@ class ExpectimaxAgent(Agent):
             return self.evaluator.evaluate(board), None
 
         # We need to know legal moves.
-        # Instead of calling game.legal_moves which creates Boards,
+        # Instead of calling game_2048.legal_moves which creates Boards,
         # we can try all 4 directions and see if board changes.
         # Since we are in the search loop, optimizing this is key.
         # However, to keep it clean, let's iterate through possible actions.
 
-        best_score = float('-inf')
+        best_score = float("-inf")
         best_action = None
 
         # Actions: UP, DOWN, LEFT, RIGHT

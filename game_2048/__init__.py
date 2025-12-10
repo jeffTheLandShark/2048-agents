@@ -8,7 +8,6 @@ from .board import Board, encode_board_log2, decode_board_log2
 
 __all__ = [
     "Board",
-    "GameEnv",
     "Action",
     "Position",
     "SpawnLocation",
@@ -91,5 +90,6 @@ class Action(Enum):
 def __getattr__(name: str):
     if name == "GameEnv":
         from .game_env import GameEnv
+
         return GameEnv
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

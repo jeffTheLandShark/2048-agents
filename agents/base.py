@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 from typing import List, Any
-from game import Board
+from game_2048 import Board
 
 
 class Agent(ABC):
