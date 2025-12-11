@@ -34,7 +34,7 @@ class HeuristicEvaluator:
         """
         if weights is None:
             weights = MCTS_WEIGHTS
-        if weights["corner_bonus"] is None:
+        if "corner_bonus" not in weights or weights["corner_bonus"] is None:
             weights["corner_bonus"] = 3.0  # bad implementation but it works for now
         self.weights = weights
 
