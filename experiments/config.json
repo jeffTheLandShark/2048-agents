@@ -6,10 +6,10 @@
     "type": "mcts",
     "config": {
       "num_simulations": 1000,
-      "time_limit_ms": 3000,
+      "time_limit_ms": 1000,
       "exploration_constant": 1.414,
-      "depth_limit": 3,
-      "rollout_policy": "random"
+      "depth_limit": 10,
+      "rollout_policy": "heuristic"
     }
   },
   "logging": {
