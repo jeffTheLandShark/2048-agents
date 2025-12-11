@@ -15,6 +15,7 @@ MCTS_WEIGHTS = {
     "corner_bonus": 0,
 }
 
+
 class HeuristicEvaluator:
     """
     Weighted heuristic evaluator for 2048 board states.
@@ -34,7 +35,7 @@ class HeuristicEvaluator:
         if weights is None:
             weights = MCTS_WEIGHTS
         if weights["corner_bonus"] is None:
-            weights["corner_bonus"] = 3.0 # bad implementation but it works for now
+            weights["corner_bonus"] = 3.0  # bad implementation but it works for now
         self.weights = weights
 
     def evaluate(self, board: Board) -> float:
@@ -56,16 +57,21 @@ class HeuristicEvaluator:
                 if name == "max_tile" and value > 0:
                     val = float(np.log2(value))
                 if name == "empty" and value > 0:
-                    val = float(value/board.size**2)
+                    val = float(value / board.size**2)
 
                 score += self.weights[name] * val
         # Bonus if max tile is in any corner (position [size-1, size-1])
         max_tile_value = features["max_tile"]
-        corners = [(0, 0), (board.size - 1, 0), (0, board.size - 1), (board.size - 1, board.size - 1)]
+        corners = [
+            (0, 0),
+            (board.size - 1, 0),
+            (0, board.size - 1),
+            (board.size - 1, board.size - 1),
+        ]
         for corner in corners:
             if max_tile_value == board.array[corner] and max_tile_value > 0:
                 score += self.weights["corner_bonus"]
-                break # only one corner bonus
+                break  # only one corner bonus
         return score
 
     def get_weights(self) -> Dict[str, float]:
