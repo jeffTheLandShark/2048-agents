@@ -36,7 +36,7 @@ class MCTSAgent(Agent):
         exploration_constant: float = 1.414,  # sqrt(2)
         rollout_policy: str = "random",
         depth_limit: int = 3,
-        time_limit_ms: Optional[int] = None,
+        time_limit_ms: Optional[int] = 100,
     ) -> None:
         """
         Initialize MCTS agent.
@@ -53,6 +53,7 @@ class MCTSAgent(Agent):
         self.depth_limit = depth_limit
         self._start_time = 0.0
         self._evaluator = HeuristicEvaluator()
+        self.time_limit_ms = time_limit_ms
 
     def choose_action(self, state: Board, legal_moves: List[str]) -> str:
         """
@@ -81,18 +82,20 @@ class MCTSAgent(Agent):
         self._start_time = time.time()
 
         for _ in range(self.num_simulations):
+            if self._check_timeout():
+                break
             node = root
-            board_env = board_env.copy()
+            node_board_env = board_env.copy()
             # Selection
             while node.untried_actions == [] and node.children != []:
                 node = self._selection(node)
-                board_env.step(node.prev_move)
+                node_board_env.step(node.prev_move)
             # Expansion
             if node.untried_actions:
                 node = self._expansion(node)
-                board_env.step(node.prev_move)
+                node_board_env.step(node.prev_move)
             # Simulation
-            reward = self._simulation(board_env)
+            reward = self._simulation(node_board_env)
             # Backpropagation
             self._backpropagation(node, reward)
 
@@ -182,3 +185,10 @@ class MCTSAgent(Agent):
             math.log(parent_visits + 1) / node_visits
         )
         return exploitation + exploration
+
+    def _check_timeout(self) -> bool:
+        """Check if time limit has been exceeded."""
+        if self.time_limit_ms is None:
+            return False
+        elapsed = (time.time() - self._start_time) * 1000
+        return elapsed >= self.time_limit_ms
