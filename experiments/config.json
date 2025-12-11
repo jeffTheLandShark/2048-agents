@@ -1,5 +1,5 @@
 {
-  "experiment_name": "mass_mcts",
+  "experiment_name": "mass_mcts_heuristic",
   "board_size": 4,
   "num_games": 64,
   "agent": {
