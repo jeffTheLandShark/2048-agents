@@ -4,7 +4,18 @@ from typing import List, Optional, Generator, Any
 from pathlib import Path
 import json
 import pandas as pd
-from stats_logging import GameLog
+from typing import TypedDict, Dict, Any, Optional, List
+
+# Define GameLog locally to avoid circular import
+GameLog = TypedDict('GameLog', {
+    'game_id': str,
+    'agent': str,
+    'board_size': int,
+    'seed': Optional[int],
+    'config': Dict[str, Any],
+    'steps': List[Dict[str, Any]],
+    'summary': Dict[str, Any]
+})
 
 
 def load_jsonl_logs(log_file: Path) -> Generator[GameLog, None, None]:

@@ -53,7 +53,9 @@ class MeanScoreFitness(FitnessStrategy):
         Returns:
             Mean final score across all games.
         """
-        raise NotImplementedError
+        if df.empty or 'final_score' not in df.columns:
+            return 0.0
+        return float(df['final_score'].mean())
 
 
 class ScorePlusBonusFitness(FitnessStrategy):
@@ -77,7 +79,9 @@ class ScorePlusBonusFitness(FitnessStrategy):
             bonus_4096: Bonus points for reaching 4096 tile.
             bonus_8192: Bonus points for reaching 8192 tile.
         """
-        raise NotImplementedError
+        self.bonus_2048 = bonus_2048
+        self.bonus_4096 = bonus_4096
+        self.bonus_8192 = bonus_8192
 
     def compute(self, df: pd.DataFrame) -> float:
         """
@@ -89,5 +93,27 @@ class ScorePlusBonusFitness(FitnessStrategy):
         Returns:
             Mean final score plus weighted achievement bonuses.
         """
-        raise NotImplementedError
+        if df.empty:
+            return 0.0
+
+        mean_score = df['final_score'].mean() if 'final_score' in df.columns else 0.0
+
+        if 'highest_tile' not in df.columns:
+            return float(mean_score)
+
+        # Count games reaching each threshold
+        reached_2048 = (df['highest_tile'] >= 2048).sum() if 'highest_tile' in df.columns else 0
+        reached_4096 = (df['highest_tile'] >= 4096).sum() if 'highest_tile' in df.columns else 0
+        reached_8192 = (df['highest_tile'] >= 8192).sum() if 'highest_tile' in df.columns else 0
+
+        total_games = len(df)
+
+        # Average bonuses (per game)
+        bonus = (
+            (reached_2048 / total_games) * self.bonus_2048 +
+            (reached_4096 / total_games) * self.bonus_4096 +
+            (reached_8192 / total_games) * self.bonus_8192
+        )
+
+        return float(mean_score + bonus)
 

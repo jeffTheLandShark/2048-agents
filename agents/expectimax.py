@@ -33,6 +33,10 @@ class ExpectimaxAgent(Agent):
         time_limit_ms: Optional[int] = None,
         heuristic_weights: Optional[Dict[str, float]] = None,
         use_iterative_deepening: bool = True,
+        sample_empty_cells: bool = False,
+        max_empty_samples: int = 6,
+        sample_depth_cutoff: int = 2,
+        sample_rng_seed: int = 0,
     ) -> None:
         """
         Initialize Expectimax agent.
@@ -51,6 +55,11 @@ class ExpectimaxAgent(Agent):
         self.depth_limit = depth_limit
         self.time_limit_ms = time_limit_ms
         self.use_iterative_deepening = use_iterative_deepening
+        # Optional sampling to cap branching factor in deep chance nodes
+        self.sample_empty_cells = sample_empty_cells
+        self.max_empty_samples = max_empty_samples
+        self.sample_depth_cutoff = sample_depth_cutoff
+        self._sample_rng = np.random.default_rng(sample_rng_seed)
         self._start_time = 0.0
 
     def choose_action(self, state: Board, legal_moves: List[str]) -> str:
@@ -182,30 +191,33 @@ class ExpectimaxAgent(Agent):
             return self.evaluator.evaluate(board)
 
         # Find empty cells
-        # board.array is numpy array
         empty_rows, empty_cols = np.where(board.array == 0)
         empty_cells = list(zip(empty_rows, empty_cols))
 
         if not empty_cells:
             return self.evaluator.evaluate(board)
 
-        # Optimization: If too many empty cells, sampling or pruning might be needed for performance.
-        # For standard 2048, evaluating all empty cells is standard for shallow depths.
-        # 2 tile (0.9 prob), 4 tile (0.1 prob)
+        # Optionally sample empty cells to cap branching factor at deeper depths.
+        sampled_cells = empty_cells
+        if (
+            self.sample_empty_cells
+            and depth > self.sample_depth_cutoff
+            and len(empty_cells) > self.max_empty_samples
+        ):
+            sampled_indices = self._sample_rng.choice(
+                len(empty_cells), size=self.max_empty_samples, replace=False
+            )
+            sampled_cells = [empty_cells[i] for i in sampled_indices]
 
+        # 2 tile (0.9 prob), 4 tile (0.1 prob)
         avg_score = 0.0
         prob_2 = 0.9
         prob_4 = 0.1
 
-        num_empty = len(empty_cells)
-        prob_cell = 1.0 / num_empty
+        num_cells = len(sampled_cells)
+        prob_cell = 1.0 / num_cells
 
-        # For each empty cell
-        for r, c in empty_cells:
-            # Case 1: Spawn 2
-            # We must not modify board.array in place, or revert it.
-            # Modification and revert is faster than copying.
-
+        for r, c in sampled_cells:
             # Spawn 2
             board.array[r, c] = 2
             score_2, _ = self._maximize(board, depth - 1)

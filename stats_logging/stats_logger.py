@@ -4,10 +4,41 @@ from typing import List, Dict, Any, Optional
 from pathlib import Path
 import json
 import re
-from stats_logging import GameSummary, GameLog, StepLog
 from stats_logging.etl import load_jsonl_logs
 from heuristics import HeuristicFeatures
 from game_2048 import Board, encode_board_log2
+
+# Define types locally to avoid circular import with stats_logging.__init__
+from typing import TypedDict
+
+GameSummary = TypedDict('GameSummary', {
+    'final_score': int,
+    'highest_tile': int,
+    'game_length': int,
+    'final_tile_counts': Dict[str, int],
+    'final_heuristics': Dict[str, float]
+})
+
+StepLog = TypedDict('StepLog', {
+    't': int,
+    'board': List[int],
+    'action': Optional[str],
+    'reward': float,
+    'score': int,
+    'tile_counts': Dict[str, int],
+    'heuristics': Dict[str, float],
+    'done': bool
+})
+
+GameLog = TypedDict('GameLog', {
+    'game_id': str,
+    'agent': str,
+    'board_size': int,
+    'seed': Optional[int],
+    'config': Dict[str, Any],
+    'steps': List[StepLog],
+    'summary': GameSummary
+})
 
 
 class StatsLogger:
