@@ -105,7 +105,7 @@ class MCTSAgent(Agent):
             self._backpropagation(node, reward)
 
         # Choose the best action from the root's children
-        best_child = max(root.children, key=lambda c: c.visits)
+        best_child = max(root.children, key=lambda c: c.wins)
         return best_child.prev_move
 
     def _selection(self, node: MCTSNode) -> MCTSNode:
