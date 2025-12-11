@@ -8,6 +8,7 @@ import time
 from agents import Agent
 from game_2048.game_env import GameEnv
 from game_2048 import Board
+from heuristics.evaluator import HeuristicEvaluator
 
 
 @dataclass
@@ -30,10 +31,10 @@ class MCTSAgent(Agent):
 
     def __init__(
         self,
-        num_simulations: int = 10,
+        num_simulations: int = 1000,
         exploration_constant: float = 1.414,  # sqrt(2)
         rollout_policy: str = "random",
-        depth_limit: int = 100,
+        depth_limit: int = 3,
         time_limit_ms: Optional[int] = None,
     ) -> None:
         """
@@ -51,6 +52,7 @@ class MCTSAgent(Agent):
         self.depth_limit = depth_limit
         self.time_limit_ms = time_limit_ms
         self._start_time = 0.0
+        self._evaluator = HeuristicEvaluator()
 
     def choose_action(self, state: Board, legal_moves: List[str]) -> str:
         """
@@ -140,18 +142,15 @@ class MCTSAgent(Agent):
         while (
             not current_state.is_game_over()
             and current_state.get_move_count() < self.depth_limit
+            and not self._check_timeout()
         ):
             legal_moves = current_state.legal_moves()
             if not legal_moves:
                 break
-            if self.rollout_policy == "random":
-                action = random.choice(legal_moves)
-            else:
-                # Placeholder for heuristic policy
-                action = legal_moves[0]  # Replace with actual heuristic
+            action = random.choice(legal_moves)
             current_state.step(action)
 
-        return current_state.get_score()
+        return self._evaluator.evaluate(current_state.get_board())
 
     def _backpropagation(self, node: MCTSNode, reward: float) -> None:
         """Backpropagate the reward up the tree."""
@@ -171,6 +170,7 @@ class MCTSAgent(Agent):
         if node_visits == 0:
             return float("inf")
         exploitation = node_wins / node_visits
+        # exploration = C * sqrt(ln(total_simulations) / node_visits)
         exploration = (
             self.exploration_constant
             * ((2 * (total_simulations).bit_length()) / node_visits) ** 0.5
