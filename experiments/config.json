@@ -1,20 +1,15 @@
 {
-  "experiment_name": "mass_expectimax_corner",
+  "experiment_name": "mass_mcts",
   "board_size": 4,
-  "num_games": 64,
+  "num_games": 1,
   "agent": {
-    "type": "expectimax",
+    "type": "mcts",
     "config": {
-      "depth_limit": 3,
-      "time_limit_ms": 75,
-      "heuristic_weights": {
-        "empty": 9.2,
-        "monotonicity": 3.3,
-        "smoothness": 3.2,
-        "merge_potential": 6.4,
-        "max_tile": 0,
-        "sum_tiles": 0
-      }
+      "num_simulations": 1000,
+      "time_limit_ms": 3000,
+      "exploration_constant": 1.414,
+      "depth_limit": 15,
+      "rollout_policy": "random"
     }
   },
   "logging": {
@@ -24,5 +19,32 @@
   },
   "seed": null,
   "output_dir": "data/processed",
-  "num_workers": 64
+  "num_workers": 1,
+  "_comment": {
+    "agent_0": {
+      "type": "expectimax",
+      "config": {
+        "depth_limit": 3,
+        "time_limit_ms": 75,
+        "heuristic_weights": {
+          "empty": 9.2,
+          "monotonicity": 3.3,
+          "smoothness": 3.2,
+          "merge_potential": 6.4,
+          "max_tile": 0,
+          "sum_tiles": 0
+        }
+      }
+    },
+    "agent_1": {
+      "type": "mcts",
+      "config": {
+        "num_simulations": 1000,
+        "time_limit_ms": 3000,
+        "exploration_constant": 5.656,
+        "depth_limit": 15,
+        "rollout_policy": "random"
+      }
+    }
+  }
 }

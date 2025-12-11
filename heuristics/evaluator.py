@@ -5,6 +5,15 @@ from typing import Dict
 from game_2048 import Board
 from heuristics.features import compute_all_features
 
+MCTS_WEIGHTS = {
+    "empty": 0.1036,
+    "monotonicity": 0.0372,
+    "smoothness": 0.0360,
+    "merge_potential": 0.0721,
+    "max_tile": 0,
+    "sum_tiles": 0,
+    "corner_bonus": 0,
+}
 
 class HeuristicEvaluator:
     """
@@ -14,7 +23,7 @@ class HeuristicEvaluator:
     Used by Expectimax (both fixed and GA-optimized variants).
     """
 
-    def __init__(self, weights: Dict[str, float]) -> None:
+    def __init__(self, weights: Dict[str, float] | None = None) -> None:
         """
         Initialize evaluator with heuristic weights.
 
@@ -22,6 +31,10 @@ class HeuristicEvaluator:
             weights: Dictionary mapping feature names to their weights.
                     Example: {"empty": 2.7, "monotonicity": 1.0, "smoothness": 0.1}
         """
+        if weights is None:
+            weights = MCTS_WEIGHTS
+        if weights["corner_bonus"] is None:
+            weights["corner_bonus"] = 3.0 # bad implementation but it works for now
         self.weights = weights
 
     def evaluate(self, board: Board) -> float:
@@ -51,7 +64,7 @@ class HeuristicEvaluator:
         corners = [(0, 0), (board.size - 1, 0), (0, board.size - 1), (board.size - 1, board.size - 1)]
         for corner in corners:
             if max_tile_value == board.array[corner] and max_tile_value > 0:
-                score += 3.0
+                score += self.weights["corner_bonus"]
                 break # only one corner bonus
         return score
 
