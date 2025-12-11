@@ -22,9 +22,7 @@ from game_2048.pygame_ui import run_human_ui, run_replay_from_log, run_agent, UI
 from stats_logging import StatsLogger
 from agents.random_agent import RandomAgent
 from agents.expectimax import ExpectimaxAgent
-
-# Import other agents as needed/available
-# from agents.mcts import MCTSAgent
+from agents.mcts import MCTSAgent
 
 
 def setup_logger(
@@ -117,13 +115,17 @@ def main():
             agent = ExpectimaxAgent(
                 depth_limit=3,  # Reasonable default for real-time play
                 time_limit_ms=250,  # 1 second limit per move
-                use_iterative_deepening=True
+                use_iterative_deepening=True,
             )
         elif args.agent == "mcts":
-            # TODO: Instantiate MCTS when available
-            # agent = MCTSAgent(...)
-            print("MCTS agent not yet fully integrated in launcher. Using RandomAgent.")
-            agent = RandomAgent(seed=args.seed)
+            # Instantiate MCTS with reasonable defaults for real-time play
+            agent = MCTSAgent(
+                num_simulations=100,  # Balance between speed and quality
+                exploration_constant=1.414,
+                rollout_policy="random",
+                depth_limit=100,
+                time_limit_ms=500,  # 0.5 second limit per move
+            )
         else:
             print(f"Unknown agent: {args.agent}")
             sys.exit(1)
