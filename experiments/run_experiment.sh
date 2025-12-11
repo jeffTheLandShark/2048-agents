@@ -2,10 +2,9 @@
 #SBATCH --job-name=exp2048
 #SBATCH --output=exp2048.%j.out
 #SBATCH --time=02:00:00
-#SBATCH --cpus-per-task=16          # match num_workers in config
-#SBATCH --mem=16G                    # adjust as needed
+#SBATCH --cpus-per-task=64          # match num_workers in config
+#SBATCH --mem=128G                    # adjust as needed
 #SBATCH --partition=teaching         # CPU partition
-#SBATCH --array=0-3                 # uncomment for multiple seeds/experiments
 
 set -euo pipefail
 
@@ -42,7 +41,7 @@ config['seed'] = ${seed}
 # config['experiment_name'] = f\"{config.get('experiment_name', 'experiment')}_seed_${seed}\"
 
 # Optionally override num_workers to match SLURM cpus-per-task
-# config['num_workers'] = 16
+# config['num_workers'] = 64
 
 print(f'Running experiment: {config.get(\"experiment_name\", \"unnamed\")}')
 print(f'Seed: {config.get(\"seed\")}')

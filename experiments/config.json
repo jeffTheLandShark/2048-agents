@@ -1,12 +1,12 @@
 {
-  "experiment_name": "baseline_experiment",
+  "experiment_name": "mass_expectimax_corner",
   "board_size": 4,
-  "num_games": 6,
+  "num_games": 64,
   "agent": {
     "type": "expectimax",
     "config": {
       "depth_limit": 3,
-      "time_limit_ms": 250,
+      "time_limit_ms": 75,
       "heuristic_weights": {
         "empty": 9.2,
         "monotonicity": 3.3,
@@ -24,5 +24,5 @@
   },
   "seed": null,
   "output_dir": "data/processed",
-  "num_workers": 2
+  "num_workers": 64
 }
