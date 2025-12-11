@@ -17,40 +17,47 @@ seed=$((1000 + task_id))
 
 cd "${proj_dir}"
 
-# Create temporary Python script for multiprocessing compatibility
-tmp_script=$(mktemp --suffix=.py --tmpdir="${proj_dir}")
+# Create wrapper script for multiprocessing compatibility
+wrapper_script="${proj_dir}/experiments/run_slurm_experiment.py"
 
-cat > "${tmp_script}" << 'PYTHON_SCRIPT'
+cat > "${wrapper_script}" << 'WRAPPER_SCRIPT'
+import os
 import json
+import sys
 from pathlib import Path
+
+# Add project root to path
+project_root = Path(__file__).parent.parent
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+
 from experiments.run_experiment import run_experiment
 
-# Load config
-config_path = Path('experiments/config.json')
-with open(config_path, 'r') as f:
-    config = json.load(f)
+if __name__ == '__main__':
+    # Load config
+    config_path = Path(__file__).parent / 'config.json'
+    with open(config_path, 'r') as f:
+        config = json.load(f)
 
-# Override seed from SLURM array task ID
-config['seed'] = SEED_PLACEHOLDER
+    # Override seed from SLURM environment variable
+    if 'SLURM_SEED' in os.environ:
+        config['seed'] = int(os.environ['SLURM_SEED'])
 
-# Optionally override experiment name to include seed
-# config['experiment_name'] = f"{config.get('experiment_name', 'experiment')}_seed_{SEED_PLACEHOLDER}"
+    # Optionally override experiment name to include seed
+    # config['experiment_name'] = f"{config.get('experiment_name', 'experiment')}_seed_{config['seed']}"
 
-# Optionally override num_workers to match SLURM cpus-per-task
-# config['num_workers'] = 64
+    # Optionally override num_workers to match SLURM cpus-per-task
+    # config['num_workers'] = 64
 
-print(f'Running experiment: {config.get("experiment_name", "unnamed")}')
-print(f'Seed: {config.get("seed")}')
-print(f'Agent: {config["agent"]["type"]}')
-print(f'Games: {config["num_games"]}')
-print(f'Workers: {config.get("num_workers", "sequential")}')
-print()
+    print(f'Running experiment: {config.get("experiment_name", "unnamed")}')
+    print(f'Seed: {config.get("seed")}')
+    print(f'Agent: {config["agent"]["type"]}')
+    print(f'Games: {config["num_games"]}')
+    print(f'Workers: {config.get("num_workers", "sequential")}')
+    print()
 
-run_experiment(config)
-PYTHON_SCRIPT
-
-# Replace seed placeholder with actual value
-sed -i "s/SEED_PLACEHOLDER/${seed}/g" "${tmp_script}"
+    run_experiment(config)
+WRAPPER_SCRIPT
 
 singularity exec \
   -B /data:/data \
@@ -58,10 +65,11 @@ singularity exec \
   --pwd "${proj_dir}" \
   "${container}" \
   /bin/bash -lc "
+    export SLURM_SEED=${seed} && \
     python -m pip install -r requirements.txt && \
-    python '${tmp_script}'
+    python '${wrapper_script}'
   "
 
-# Clean up temporary script
-rm -f "${tmp_script}"
+# Clean up wrapper script
+rm -f "${wrapper_script}"
 
