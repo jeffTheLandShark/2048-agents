@@ -17,14 +17,10 @@ seed=$((1000 + task_id))
 
 cd "${proj_dir}"
 
-singularity exec \
-  -B /data:/data \
-  -B "${proj_dir}:${proj_dir}" \
-  --pwd "${proj_dir}" \
-  "${container}" \
-  /bin/bash -lc "
-    python -m pip install -r requirements.txt && \
-    python << PYTHON_SCRIPT
+# Create temporary Python script for multiprocessing compatibility
+tmp_script=$(mktemp --suffix=.py --tmpdir="${proj_dir}")
+
+cat > "${tmp_script}" << 'PYTHON_SCRIPT'
 import json
 from pathlib import Path
 from experiments.run_experiment import run_experiment
@@ -35,22 +31,37 @@ with open(config_path, 'r') as f:
     config = json.load(f)
 
 # Override seed from SLURM array task ID
-config['seed'] = ${seed}
+config['seed'] = SEED_PLACEHOLDER
 
 # Optionally override experiment name to include seed
-# config['experiment_name'] = f\"{config.get('experiment_name', 'experiment')}_seed_${seed}\"
+# config['experiment_name'] = f"{config.get('experiment_name', 'experiment')}_seed_{SEED_PLACEHOLDER}"
 
 # Optionally override num_workers to match SLURM cpus-per-task
 # config['num_workers'] = 64
 
-print(f'Running experiment: {config.get(\"experiment_name\", \"unnamed\")}')
-print(f'Seed: {config.get(\"seed\")}')
-print(f'Agent: {config[\"agent\"][\"type\"]}')
-print(f'Games: {config[\"num_games\"]}')
-print(f'Workers: {config.get(\"num_workers\", \"sequential\")}')
+print(f'Running experiment: {config.get("experiment_name", "unnamed")}')
+print(f'Seed: {config.get("seed")}')
+print(f'Agent: {config["agent"]["type"]}')
+print(f'Games: {config["num_games"]}')
+print(f'Workers: {config.get("num_workers", "sequential")}')
 print()
 
 run_experiment(config)
 PYTHON_SCRIPT
+
+# Replace seed placeholder with actual value
+sed -i "s/SEED_PLACEHOLDER/${seed}/g" "${tmp_script}"
+
+singularity exec \
+  -B /data:/data \
+  -B "${proj_dir}:${proj_dir}" \
+  --pwd "${proj_dir}" \
+  "${container}" \
+  /bin/bash -lc "
+    python -m pip install -r requirements.txt && \
+    python '${tmp_script}'
   "
+
+# Clean up temporary script
+rm -f "${tmp_script}"
 
