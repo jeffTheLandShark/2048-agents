@@ -9,7 +9,14 @@ Supports three modes:
 Usage:
     python run_ui.py human [--log-file LOG_FILE] [--seed SEED]
     python run_ui.py replay --log-file LOG_FILE [--game-id ID] [--speed SPEED]
-    python run_ui.py agent --agent {random,expectimax,mcts} [--log-file LOG_FILE] [--seed SEED] [--delay MS]
+    python run_ui.py agent --agent {random,expectimax,mcts} [--log-file LOG_FILE] [--seed SEED] [-  -delay MS]
+
+example:
+    python run_ui.py agent --agent mcts --log-file data/raw_logs/mcts.jsonl --seed 42 --delay 100
+    python run_ui.py agent --agent expectimax --log-file data/raw_logs/expectimax.jsonl --seed 42 --delay 100
+    python run_ui.py agent --agent random --log-file data/raw_logs/random.jsonl --seed 42 --delay 100
+    python run_ui.py human --log-file data/raw_logs/human.jsonl --seed 42
+    python run_ui.py replay --log-file data/raw_logs/mass_expectimax_corner.jsonl --game-id expectimax_game_23
 """
 
 import argparse
