@@ -10,8 +10,10 @@ def main():
 
     # Files to process
     log_files = [
-        "mass_expectimax_corner.jsonl",
-        "mass_mcts.jsonl"
+        # "mass_expectimax_corner.jsonl",
+        # "mass_mcts.jsonl"
+        # "random_games.jsonl"
+        "mass_mcts_heuristic.jsonl"
     ]
 
     for log_file_name in log_files:
