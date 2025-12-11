@@ -87,15 +87,18 @@ def run_single_game(
 
 
 def main():
-    agent = MCTSAgent(num_simulations=100, time_limit_ms=500)
-    logger = StatsLogger(Path("data/raw_logs/mcts_batch.jsonl"), "mcts", 4)
+
+    agent = MCTSAgent()
+    stats_path = "data/raw_logs/mcts_batch.jsonl"
+    logger = StatsLogger(Path(stats_path), "mcts", 4)
+    print("Running MCTS agent for 10 games...")
+    print(f"Logging to {stats_path}")
 
     for i in range(10):  # Run 10 games
+        print(f"Starting game {i}...")
         env = GameEnv(seed=42 + i)
 
-        summary = run_single_game(
-            agent, env, logger=logger, game_id=f"mcts_game_{i}", seed=42 + i
-        )
+        summary = run_single_game(agent, env, logger=logger, seed=42 + i)
         print(f"Game {i} summary: {summary}")
     logger.close()
 
