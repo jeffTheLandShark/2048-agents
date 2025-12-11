@@ -1,14 +1,14 @@
 {
   "experiment_name": "mass_mcts",
   "board_size": 4,
-  "num_games": 1,
+  "num_games": 64,
   "agent": {
     "type": "mcts",
     "config": {
       "num_simulations": 1000,
       "time_limit_ms": 3000,
       "exploration_constant": 1.414,
-      "depth_limit": 15,
+      "depth_limit": 3,
       "rollout_policy": "random"
     }
   },
@@ -19,7 +19,7 @@
   },
   "seed": null,
   "output_dir": "data/processed",
-  "num_workers": 1,
+  "num_workers": 64,
   "_comment": {
     "agent_0": {
       "type": "expectimax",
