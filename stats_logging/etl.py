@@ -1,10 +1,14 @@
 """ETL utilities for converting raw JSONL logs to Parquet tables."""
 
-from typing import List, Optional, Generator, Any
+from typing import List, Optional, Generator, Any, TYPE_CHECKING
 from pathlib import Path
 import json
 import pandas as pd
-from stats_logging import GameLog
+
+if TYPE_CHECKING:
+    from stats_logging import GameLog
+else:
+    GameLog = dict
 
 
 def load_jsonl_logs(log_file: Path) -> Generator[GameLog, None, None]:
@@ -30,7 +34,9 @@ def load_jsonl_logs(log_file: Path) -> Generator[GameLog, None, None]:
             try:
                 yield json.loads(line)
             except json.JSONDecodeError as e:
-                print(f"Warning: Skipping invalid JSON at line {line_num + 1} in {log_file}: {e}")
+                print(
+                    f"Warning: Skipping invalid JSON at line {line_num + 1} in {log_file}: {e}"
+                )
 
 
 def get_game_by_id(log_file: Path, game_id: str) -> Optional[GameLog]:
@@ -103,7 +109,7 @@ def process_logs_to_parquet(
     output_dir: Path,
     games_summary_name: str = "games_summary.parquet",
     steps_name: str = "steps.parquet",
-    tile_counts_name: str = "tile_counts.parquet"
+    tile_counts_name: str = "tile_counts.parquet",
 ) -> None:
     """
     Convert JSONL log file to Parquet tables.

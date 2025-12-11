@@ -1,13 +1,21 @@
 """Statistics logger for per-game logging with full state capture."""
 
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, TYPE_CHECKING
 from pathlib import Path
 import json
 import re
-from stats_logging import GameSummary, GameLog, StepLog
 from stats_logging.etl import load_jsonl_logs
-from heuristics import HeuristicFeatures
 from game_2048 import Board, encode_board_log2
+
+if TYPE_CHECKING:
+    from stats_logging import GameSummary, GameLog, StepLog
+    from heuristics import HeuristicFeatures
+else:
+    # Delayed imports to avoid circular dependency
+    GameSummary = Dict[str, Any]
+    GameLog = Dict[str, Any]
+    StepLog = Dict[str, Any]
+    HeuristicFeatures = None
 
 
 class StatsLogger:
@@ -23,7 +31,7 @@ class StatsLogger:
         log_file: Path,
         agent_name: str,
         board_size: int = 4,
-        config: Optional[Dict[str, Any]] = None
+        config: Optional[Dict[str, Any]] = None,
     ) -> None:
         """
         Initialize statistics logger.
@@ -81,7 +89,9 @@ class StatsLogger:
 
         return max_number + 1
 
-    def start_game(self, game_id: Optional[str] = None, seed: Optional[int] = None) -> None:
+    def start_game(
+        self, game_id: Optional[str] = None, seed: Optional[int] = None
+    ) -> None:
         """
         Start logging a new game.
 
@@ -100,7 +110,7 @@ class StatsLogger:
             seed=seed,
             config=self.config,
             steps=[],
-            summary=None # Will be set at end_game
+            summary=None,  # Will be set at end_game
         )
 
     def log_step(
@@ -111,8 +121,8 @@ class StatsLogger:
         reward: float,
         score: int,
         tile_counts: Dict[str, int],
-        heuristics: HeuristicFeatures,
-        done: bool
+        heuristics: Dict[str, float],  # HeuristicFeatures dictionary
+        done: bool,
     ) -> None:
         """
         Log a single game step.
@@ -124,11 +134,13 @@ class StatsLogger:
             reward: Reward received this step.
             score: Cumulative score after this step.
             tile_counts: Dictionary mapping tile values to counts.
-            heuristics: HeuristicFeatures dictionary with feature values.
+            heuristics: Dictionary with heuristic feature values.
             done: Whether game is over.
         """
         if self._current_game is None:
-            raise RuntimeError("Cannot log step: no game started. Call start_game() first.")
+            raise RuntimeError(
+                "Cannot log step: no game started. Call start_game() first."
+            )
 
         step_log = StepLog(
             t=t,
@@ -138,7 +150,7 @@ class StatsLogger:
             score=score,
             tile_counts=tile_counts,
             heuristics=heuristics,
-            done=done
+            done=done,
         )
 
         self._current_game["steps"].append(step_log)
@@ -177,4 +189,3 @@ class StatsLogger:
         if self._file:
             self._file.close()
             self._file = None
-
