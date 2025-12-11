@@ -1,19 +1,14 @@
 """Experiment runner for executing multiple games with an agent."""
 
-from typing import Optional, Dict, Any
+from typing import Optional
 from pathlib import Path
 from game_2048.game_env import GameEnv
 from agents import Agent
-from stats_logging import StatsLogger, GameSummary, ExperimentSummary
-
-from pathlib import Path
-from game_2048.game_env import GameEnv
 from agents.mcts import MCTSAgent
-from stats_logging import StatsLogger
+from stats_logging import StatsLogger, GameSummary
 from heuristics.features import (
     compute_tile_counts,
     compute_all_features,
-    create_game_summary,
 )
 
 
