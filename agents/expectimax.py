@@ -18,6 +18,15 @@ DEFAULT_WEIGHTS = {
     "sum_tiles": 0.0,
 }
 
+BEST_WEIGHTS = {
+    "empty": 9.2,
+    "monotonicity": 3.3,
+    "smoothness": 3.2,
+    "merge_potential": 6.4,
+    "max_tile": 0,
+    "sum_tiles": 0,
+}
+
 
 class ExpectimaxAgent(Agent):
     """
