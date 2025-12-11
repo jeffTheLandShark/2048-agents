@@ -46,6 +46,13 @@ class HeuristicEvaluator:
                     val = float(value/board.size**2)
 
                 score += self.weights[name] * val
+        # Bonus if max tile is in any corner (position [size-1, size-1])
+        max_tile_value = features["max_tile"]
+        corners = [(0, 0), (board.size - 1, 0), (0, board.size - 1), (board.size - 1, board.size - 1)]
+        for corner in corners:
+            if max_tile_value == board.array[corner] and max_tile_value > 0:
+                score += 3.0
+                break # only one corner bonus
         return score
 
     def get_weights(self) -> Dict[str, float]:
