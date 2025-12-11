@@ -1,9 +1,24 @@
 """Heuristic feature computation functions for 2048 board evaluation."""
 
-from typing import List, TypedDict, Dict, Any
+from typing import List, TypedDict, Dict, Any, TYPE_CHECKING
 import numpy as np
-from stats_logging import GameSummary, TileCounts
 from game_2048 import Board
+
+if TYPE_CHECKING:
+    from stats_logging import GameSummary, TileCounts
+else:
+    # Define types locally to avoid circular import
+    TileCounts = TypedDict('TileCounts', {
+        'counts': Dict[str, int]
+    }, total=False)
+
+    GameSummary = TypedDict('GameSummary', {
+        'final_score': int,
+        'highest_tile': int,
+        'game_length': int,
+        'final_tile_counts': Dict[str, int],
+        'final_heuristics': Dict[str, float]
+    })
 
 
 class HeuristicFeatures(TypedDict):

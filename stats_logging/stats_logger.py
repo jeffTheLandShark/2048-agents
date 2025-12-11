@@ -7,16 +7,69 @@ import re
 from stats_logging.etl import load_jsonl_logs
 from game_2048 import Board, encode_board_log2
 
-if TYPE_CHECKING:
-    from stats_logging import GameSummary, GameLog, StepLog
-    from heuristics import HeuristicFeatures
-else:
-    # Delayed imports to avoid circular dependency
-    GameSummary = Dict[str, Any]
-    GameLog = Dict[str, Any]
-    StepLog = Dict[str, Any]
-    HeuristicFeatures = None
+# Define types locally to avoid circular import with stats_logging.__init__
+from typing import TypedDict
 
+GameSummary = TypedDict('GameSummary', {
+    'final_score': int,
+    'highest_tile': int,
+    'game_length': int,
+    'final_tile_counts': Dict[str, int],
+    'final_heuristics': Dict[str, float]
+})
+
+StepLog = TypedDict('StepLog', {
+    't': int,
+    'board': List[int],
+    'action': Optional[str],
+    'reward': float,
+    'score': int,
+    'tile_counts': Dict[str, int],
+    'heuristics': Dict[str, float],
+    'done': bool
+})
+
+GameLog = TypedDict('GameLog', {
+    'game_id': str,
+    'agent': str,
+    'board_size': int,
+    'seed': Optional[int],
+    'config': Dict[str, Any],
+    'steps': List[StepLog],
+    'summary': GameSummary
+})
+
+# Define types locally to avoid circular import with stats_logging.__init__
+from typing import TypedDict
+
+GameSummary = TypedDict('GameSummary', {
+    'final_score': int,
+    'highest_tile': int,
+    'game_length': int,
+    'final_tile_counts': Dict[str, int],
+    'final_heuristics': Dict[str, float]
+})
+
+StepLog = TypedDict('StepLog', {
+    't': int,
+    'board': List[int],
+    'action': Optional[str],
+    'reward': float,
+    'score': int,
+    'tile_counts': Dict[str, int],
+    'heuristics': Dict[str, float],
+    'done': bool
+})
+
+GameLog = TypedDict('GameLog', {
+    'game_id': str,
+    'agent': str,
+    'board_size': int,
+    'seed': Optional[int],
+    'config': Dict[str, Any],
+    'steps': List[StepLog],
+    'summary': GameSummary
+})
 
 class StatsLogger:
     """
