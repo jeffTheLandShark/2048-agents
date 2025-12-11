@@ -1,7 +1,14 @@
 """Experiment runner for executing multiple games with an agent."""
 
-from typing import Optional
+import sys
 from pathlib import Path
+from typing import Optional
+
+# Add project root to Python path so imports work regardless of where script is run from
+_project_root = Path(__file__).parent.parent
+if str(_project_root) not in sys.path:
+    sys.path.insert(0, str(_project_root))
+
 from game_2048.game_env import GameEnv
 from agents import Agent
 from agents.mcts import MCTSAgent
