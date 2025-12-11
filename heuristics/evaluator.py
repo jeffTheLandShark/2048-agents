@@ -5,6 +5,15 @@ from typing import Dict
 from game_2048 import Board
 from heuristics.features import compute_all_features
 
+BEST_WEIGHTS = {
+    "empty": 9.2,
+    "monotonicity": 3.3,
+    "smoothness": 3.2,
+    "merge_potential": 6.4,
+    "max_tile": 0,
+    "sum_tiles": 0,
+}
+
 
 class HeuristicEvaluator:
     """
@@ -14,7 +23,7 @@ class HeuristicEvaluator:
     Used by Expectimax (both fixed and GA-optimized variants).
     """
 
-    def __init__(self, weights: Dict[str, float]) -> None:
+    def __init__(self, weights: Dict[str, float] = BEST_WEIGHTS) -> None:
         """
         Initialize evaluator with heuristic weights.
 
@@ -43,7 +52,7 @@ class HeuristicEvaluator:
                 if name == "max_tile" and value > 0:
                     val = float(np.log2(value))
                 if name == "empty" and value > 0:
-                    val = float(value/board.size**2)
+                    val = float(value / board.size**2)
 
                 score += self.weights[name] * val
         return score
