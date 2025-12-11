@@ -6,39 +6,18 @@ from game_2048.game_env import GameEnv
 from agents import Agent
 from stats_logging import StatsLogger, GameSummary, ExperimentSummary
 
-
-def run_experiment(
-    agent: Agent,
-    env: GameEnv,
-    num_games: int = 100,
-    log_file: Optional[Path] = None,
-    agent_name: Optional[str] = None,
-    config: Optional[Dict[str, Any]] = None,
-    seed: Optional[int] = None,
-) -> ExperimentSummary:
-    """
-    Run an experiment: execute N games with an agent and optionally log results.
-
-    Args:
-        agent: Agent instance to use for gameplay.
-        env: GameEnv instance for game logic.
-        num_games: Number of games to play.
-        log_file: Optional path to JSONL log file. If None, no logging.
-        agent_name: Optional agent name for logging. If None, uses agent class name.
-        config: Optional configuration dictionary to include in logs.
-        seed: Optional random seed for reproducibility.
-
-    Returns:
-        ExperimentSummary with experiment summary statistics:
-        - mean_score: Average final score
-        - std_score: Standard deviation of scores
-        - mean_highest_tile: Average highest tile reached
-        - games_reached_2048: Number of games reaching 2048
-        - etc.
-    """
-    raise NotImplementedError
+from pathlib import Path
+from game_2048.game_env import GameEnv
+from agents.mcts import MCTSAgent
+from stats_logging import StatsLogger
+from heuristics.features import (
+    compute_tile_counts,
+    compute_all_features,
+    create_game_summary,
+)
 
 
+# Example of what run_single_game should look like
 def run_single_game(
     agent: Agent,
     env: GameEnv,
@@ -64,4 +43,67 @@ def run_single_game(
         - final_tile_counts: Final tile distribution
         - final_heuristics: Final heuristic values
     """
-    raise NotImplementedError
+    env.reset()
+    board = env.get_board()
+
+    if logger:
+        logger.start_game(game_id=game_id, seed=seed)
+        # Log initial state
+        tile_counts = compute_tile_counts(board)
+        heuristics = compute_all_features(board)
+        logger.log_step(0, board, None, 0, 0, tile_counts, heuristics, False)
+
+    step = 1
+    while not env.is_game_over():
+        legal_moves = env.legal_moves()
+        if not legal_moves:
+            break
+
+        action = agent.choose_action(board, legal_moves)
+        board, reward, done, info = env.step(action)
+
+        if logger:
+            tile_counts = compute_tile_counts(board)
+            heuristics = compute_all_features(board)
+            logger.log_step(
+                step,
+                board,
+                action,
+                reward,
+                info["score"],
+                tile_counts,
+                heuristics,
+                done,
+            )
+        step += 1
+
+    summary = {
+        "final_score": env.get_score(),
+        "highest_tile": int(board.array.max()),
+        "game_length": env.get_move_count(),
+        "final_tile_counts": compute_tile_counts(board),
+        "final_heuristics": compute_all_features(board),
+    }
+
+    if logger:
+        logger.end_game(summary)
+
+    return summary
+
+
+def main():
+    agent = MCTSAgent(num_simulations=100, time_limit_ms=500)
+    logger = StatsLogger(Path("data/raw_logs/mcts_batch.jsonl"), "mcts", 4)
+
+    for i in range(10):  # Run 10 games
+        env = GameEnv(seed=42 + i)
+
+        summary = run_single_game(
+            agent, env, logger=logger, game_id=f"mcts_game_{i}", seed=42 + i
+        )
+        print(f"Game {i} summary: {summary}")
+    logger.close()
+
+
+if __name__ == "__main__":
+    main()
