@@ -24,7 +24,7 @@ singularity exec \
   "${container}" \
   /bin/bash -lc "
     python -m pip install -r requirements.txt && \
-    python -c \"
+    python << PYTHON_SCRIPT
 import json
 from pathlib import Path
 from experiments.run_experiment import run_experiment
@@ -51,6 +51,6 @@ print(f'Workers: {config.get(\"num_workers\", \"sequential\")}')
 print()
 
 run_experiment(config)
-\"
+PYTHON_SCRIPT
   "
 
