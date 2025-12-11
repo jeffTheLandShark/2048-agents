@@ -1,17 +1,19 @@
 {
   "experiment_name": "baseline_experiment",
   "board_size": 4,
-  "num_games": 100,
+  "num_games": 6,
   "agent": {
     "type": "expectimax",
     "config": {
-      "depth_limit": 5,
-      "time_limit_ms": 100,
+      "depth_limit": 3,
+      "time_limit_ms": 250,
       "heuristic_weights": {
-        "empty": 2.7,
-        "monotonicity": 1.0,
-        "smoothness": 0.1,
-        "merge_potential": 1.0
+        "empty": 9.2,
+        "monotonicity": 3.3,
+        "smoothness": 3.2,
+        "merge_potential": 6.4,
+        "max_tile": 0,
+        "sum_tiles": 0
       }
     }
   },
@@ -21,6 +23,6 @@
     "log_format": "jsonl"
   },
   "seed": null,
-  "output_dir": "data/processed"
+  "output_dir": "data/processed",
+  "num_workers": 2
 }
-
