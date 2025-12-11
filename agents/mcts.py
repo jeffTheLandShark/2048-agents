@@ -4,6 +4,7 @@ from typing import List, Optional
 from dataclasses import dataclass
 import random
 import time
+import math
 
 from agents import Agent
 from game_2048.game_env import GameEnv
@@ -17,7 +18,7 @@ class MCTSNode:
     parent: Optional["MCTSNode"]
     children: List["MCTSNode"]
     visits: int
-    wins: float
+    total_reward: float
     untried_actions: List[str]
     prev_move: str = ""
 
@@ -50,7 +51,6 @@ class MCTSAgent(Agent):
         self.exploration_constant = exploration_constant
         self.rollout_policy = rollout_policy
         self.depth_limit = depth_limit
-        self.time_limit_ms = time_limit_ms
         self._start_time = 0.0
         self._evaluator = HeuristicEvaluator()
 
@@ -74,7 +74,7 @@ class MCTSAgent(Agent):
             parent=None,
             children=[],
             visits=0,
-            wins=0.0,
+            total_reward=0.0,
             untried_actions=legal_moves.copy(),
         )
 
@@ -83,36 +83,32 @@ class MCTSAgent(Agent):
         for _ in range(self.num_simulations):
             node = root
             board_env = board_env.copy()
-
             # Selection
             while node.untried_actions == [] and node.children != []:
-                # select
                 node = self._selection(node)
-                # step in the environment
                 board_env.step(node.prev_move)
-
             # Expansion
             if node.untried_actions:
-                # expand
                 node = self._expansion(node)
-                # step in the environment
                 board_env.step(node.prev_move)
-
             # Simulation
             reward = self._simulation(board_env)
-
             # Backpropagation
             self._backpropagation(node, reward)
 
-        # Choose the best action from the root's children
-        best_child = max(root.children, key=lambda c: c.wins)
+        # Choose the best action from the root's children (highest average reward)
+        best_child = max(
+            root.children,
+            key=lambda c: (
+                (c.total_reward / c.visits) if c.visits > 0 else float("-inf")
+            ),
+        )
         return best_child.prev_move
 
     def _selection(self, node: MCTSNode) -> MCTSNode:
         """Select a child node using UCT."""
-        total_simulations = sum(child.visits for child in node.children)
         uct_values = [
-            self._uct_value(total_simulations, child.wins, child.visits)
+            self._uct_value(node.visits, child.total_reward, child.visits)
             for child in node.children
         ]
         best_index = uct_values.index(max(uct_values))
@@ -128,7 +124,7 @@ class MCTSAgent(Agent):
             parent=node,
             children=[],
             visits=0,
-            wins=0.0,
+            total_reward=0.0,
             untried_actions=new_state.legal_moves(),
             prev_move=action,
         )
@@ -137,20 +133,32 @@ class MCTSAgent(Agent):
 
     def _simulation(self, state: GameEnv) -> float:
         """Perform a rollout from the given state and return the reward."""
-
         current_state = state.copy()
-        while (
-            not current_state.is_game_over()
-            and current_state.get_move_count() < self.depth_limit
-            and not self._check_timeout()
-        ):
+        rollout_steps = 0
+        while not current_state.is_game_over() and rollout_steps < self.depth_limit:
             legal_moves = current_state.legal_moves()
             if not legal_moves:
                 break
-            action = random.choice(legal_moves)
+            if self.rollout_policy == "heuristic":
+                action = self._choose_heuristic_action(legal_moves, current_state)
+            else:
+                action = random.choice(legal_moves)
             current_state.step(action)
-
+            rollout_steps += 1
         return self._evaluator.evaluate(current_state.get_board())
+
+    def _choose_heuristic_action(self, legal_moves: List[str], state: GameEnv) -> str:
+        """Choose the best action according to the heuristic evaluator."""
+        best_score = float("-inf")
+        best_action = legal_moves[0]
+        for action in legal_moves:
+            temp_state = state.copy()
+            temp_state.step(action)
+            score = self._evaluator.evaluate(temp_state.get_board())
+            if score > best_score:
+                best_score = score
+                best_action = action
+        return best_action
 
     def _backpropagation(self, node: MCTSNode, reward: float) -> None:
         """Backpropagate the reward up the tree."""
@@ -158,28 +166,19 @@ class MCTSAgent(Agent):
         while next_node is not None:
             node = next_node
             node.visits += 1
-            node.wins += reward
+            node.total_reward += reward
             next_node = node.parent if node else None
 
     def _uct_value(
-        self, total_simulations: int, node_wins: float, node_visits: int
+        self, parent_visits: int, node_total_reward: float, node_visits: int
     ) -> float:
         """Calculate the UCT value for a node.
-        UCT = (wins / visits) + C * sqrt(ln(total_simulations) / visits)
+        UCT = (total_reward / visits) + C * sqrt(ln(parent_visits) / visits)
         """
         if node_visits == 0:
             return float("inf")
-        exploitation = node_wins / node_visits
-        # exploration = C * sqrt(ln(total_simulations) / node_visits)
-        exploration = (
-            self.exploration_constant
-            * ((2 * (total_simulations).bit_length()) / node_visits) ** 0.5
+        exploitation = node_total_reward / node_visits
+        exploration = self.exploration_constant * math.sqrt(
+            math.log(parent_visits + 1) / node_visits
         )
         return exploitation + exploration
-
-    def _check_timeout(self) -> bool:
-        """Check if time limit has been exceeded."""
-        if self.time_limit_ms is None:
-            return False
-        elapsed = (time.time() - self._start_time) * 1000
-        return elapsed >= self.time_limit_ms
