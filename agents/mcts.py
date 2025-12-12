@@ -36,7 +36,7 @@ class MCTSAgent(Agent):
         exploration_constant: float = 1.414,  # sqrt(2)
         rollout_policy: str = "random",
         depth_limit: int = 3,
-        time_limit_ms: Optional[int] = 100,
+        time_limit_ms: Optional[int] = None,
     ) -> None:
         """
         Initialize MCTS agent.
