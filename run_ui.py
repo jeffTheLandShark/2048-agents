@@ -17,6 +17,7 @@ example:
     python run_ui.py agent --agent random --log-file data/raw_logs/random.jsonl --seed 42 --delay 100
     python run_ui.py human --log-file data/raw_logs/human.jsonl --seed 42
     python run_ui.py replay --log-file data/raw_logs/mass_expectimax_corner.jsonl --game-id expectimax_game_23
+    python run_ui.py replay --log-file data/raw_logs/mass_mcts_heuristic.jsonl --game-id mcts_game_45
 """
 
 import argparse
@@ -127,11 +128,11 @@ def main():
         elif args.agent == "mcts":
             # Instantiate MCTS with reasonable defaults for real-time play
             agent = MCTSAgent(
-                num_simulations=100,  # Balance between speed and quality
+                num_simulations=1000,  # Balance between speed and quality
                 exploration_constant=1.414,
                 rollout_policy="random",
-                depth_limit=100,
-                time_limit_ms=500,  # 0.5 second limit per move
+                depth_limit=10,
+                time_limit_ms=200,  # 0.5 second limit per move
             )
         else:
             print(f"Unknown agent: {args.agent}")
