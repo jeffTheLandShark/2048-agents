@@ -1,0 +1,12 @@
+{
+  "generation": 6,
+  "fitness": 24696.0,
+  "weights": {
+    "empty": 6.596407086806831,
+    "monotonicity": 4.675226424158081,
+    "smoothness": 1.8199216852438684,
+    "merge_potential": 7.694017523302741,
+    "max_tile": -8.300232192277175,
+    "sum_tiles": -7.3526833976785015
+  }
+}
