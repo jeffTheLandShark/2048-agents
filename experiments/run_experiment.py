@@ -1,4 +1,15 @@
-"""Experiment runner for executing multiple games with an agent."""
+"""
+Headless Experiment Runner for 2048 Agents.
+
+This script facilitates the execution of large-scale experiments to benchmark agent performance.
+It supports running multiple games in parallel using multiprocessing, collecting detailed logs,
+and configuring experiments via JSON files.
+
+Usage:
+    python experiments/run_experiment.py
+
+Configuration is loaded from 'experiments/config.json'.
+"""
 
 import sys
 import json

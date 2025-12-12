@@ -1,4 +1,14 @@
-"""Board class and encoding/decoding utilities for 2048 game state."""
+"""
+Board Class and Data Structures for 2048.
+
+This module provides the Board class, which wraps a NumPy array to represent the game state.
+It includes methods for validation, serialization (encoding/decoding for logs), and efficient
+access to the underlying array for high-performance operations.
+
+Key components:
+- Board class: Type-safe wrapper around numpy.ndarray.
+- Encoding functions: Compress board states for efficient logging (log2 representation).
+"""
 
 from typing import List, Union, Optional
 import numpy as np

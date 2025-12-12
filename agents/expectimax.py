@@ -1,4 +1,16 @@
-"""Expectimax agent implementation for 2048."""
+"""
+Expectimax AI Agent Implementation for 2048.
+
+This module provides the ExpectimaxAgent class, which implements the Expectimax search algorithm
+optimized for the 2048 game. It uses iterative deepening depth-first search (IDDFS) to explore
+game states, distinguishing between 'max' nodes (player moves) and 'chance' nodes (random tile spawns).
+
+Key features:
+- Iterative deepening to manage time constraints.
+- Weighted heuristic evaluation of leaf nodes.
+- Efficient state copying for search performance.
+- Support for configurable heuristic weights, allowing for optimization via Genetic Algorithms.
+"""
 
 import time
 import numpy as np

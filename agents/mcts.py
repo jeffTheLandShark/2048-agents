@@ -1,4 +1,15 @@
-"""Monte-Carlo Tree Search (MCTS) agent implementation for 2048."""
+"""
+Monte-Carlo Tree Search (MCTS) AI Agent Implementation for 2048.
+
+This module provides the MCTSAgent class, utilizing the Upper Confidence Bound for Trees (UCT)
+algorithm to balance exploration and exploitation in the search space.
+
+Key features:
+- UCT selection strategy.
+- Randomized or heuristic-guided rollouts (simulations).
+- Dynamic tree expansion and backpropagation of rewards.
+- Configurable simulation counts and exploration constants.
+"""
 
 from typing import List, Optional
 from dataclasses import dataclass

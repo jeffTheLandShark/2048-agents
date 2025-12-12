@@ -1,4 +1,15 @@
-"""ETL utilities for converting raw JSONL logs to Parquet tables."""
+"""
+Extract-Transform-Load (ETL) Utilities for Log Processing.
+
+This module contains functions to transform raw JSONL game logs into structured pandas
+DataFrames and Parquet files. It facilitates the analysis of experiment results by
+aggregating data into useful tables (game summaries, step details, tile counts).
+
+Key functions:
+- load_jsonl_logs: Generator for memory-efficient log reading.
+- create_games_summary_table: Aggregates per-game statistics.
+- create_steps_table: Flattens time-series data of game steps.
+"""
 
 from typing import List, Optional, Generator, Any, TYPE_CHECKING, TypedDict, Dict
 from pathlib import Path

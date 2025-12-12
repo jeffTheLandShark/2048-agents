@@ -1,10 +1,10 @@
 """
-Launcher script for 2048 AI Pygame UI.
+Graphical User Interface (GUI) Launcher for 2048.
 
-Supports three modes:
-1. Human Play: Play the game manually.
-2. Replay: Watch a replay from a JSONL log file.
-3. Agent Play: Watch an AI agent play in real-time.
+This script launches a Pygame-based window that allows users to:
+1. Play the game manually ("human" mode).
+2. Watch AI agents play in real-time ("agent" mode).
+3. Replay previously recorded games from log files ("replay" mode).
 
 Usage:
     python run_ui.py human [--log-file LOG_FILE] [--seed SEED]

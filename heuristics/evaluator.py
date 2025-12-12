@@ -1,4 +1,17 @@
-"""Heuristic evaluator for computing weighted board state scores."""
+"""
+Heuristic Evaluation Logic for 2048 Board States.
+
+This module implements the HeuristicEvaluator class, which calculates a scalar score for a given
+board state based on a weighted sum of various features. It serves as the evaluation function
+for search-based agents like Expectimax.
+
+Features evaluated:
+- Monotonicity (ordering of tiles).
+- Smoothness (adjacent tile value differences).
+- Empty tiles (count).
+- Merge potential.
+- Max tile value and positioning.
+"""
 
 import numpy as np
 from typing import Dict

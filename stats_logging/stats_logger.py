@@ -1,4 +1,15 @@
-"""Statistics logger for per-game logging with full state capture."""
+"""
+Statistics Logger for 2048 Games.
+
+This module provides the StatsLogger class, which is responsible for recording game data
+in a structured JSON Lines (JSONL) format. It captures detailed state information at each
+step, including board configurations, actions taken, scores, and heuristic evaluations.
+
+Key features:
+- Append-only logging for efficiency.
+- Detailed step-by-step recording for replay capability.
+- Automatic game numbering and ID generation.
+"""
 
 from typing import List, Dict, Any, Optional, TYPE_CHECKING
 from pathlib import Path

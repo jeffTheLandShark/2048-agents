@@ -1,4 +1,16 @@
-"""Heuristic feature computation functions for 2048 board evaluation."""
+"""
+Stateless Heuristic Feature Computation Functions.
+
+This module contains standalone functions to compute specific properties of a 2048 board state.
+These functions are designed to be used by the HeuristicEvaluator but can also be used
+independently for analysis or logging.
+
+Functions include:
+- compute_monotonicity: Measures grid organization.
+- compute_smoothness: Measures value gradients.
+- compute_empty_tiles: Counts open spaces.
+- compute_merge_potential: Estimates immediate merge opportunities.
+"""
 
 from typing import List, TypedDict, Dict, Any, TYPE_CHECKING
 import numpy as np

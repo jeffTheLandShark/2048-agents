@@ -1,4 +1,16 @@
-"""Core 2048 game environment with deterministic rules and transitions."""
+"""
+Core Game Environment and Logic for 2048.
+
+This module defines the GameEnv class, which encapsulates the rules, state transitions,
+and scoring mechanisms of the 2048 game. It is designed to be deterministic (given a seed)
+and efficient, avoiding dependencies on rendering libraries like Pygame for core logic.
+
+Key functionalities:
+- Board initialization and resetting.
+- Deterministic tile spawning.
+- Move validation and execution (sliding/merging).
+- Game state tracking (score, game over condition).
+"""
 
 from typing import List, Tuple, Optional, TYPE_CHECKING
 from abc import ABC

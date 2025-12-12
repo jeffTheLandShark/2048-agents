@@ -1,4 +1,16 @@
-"""Genetic algorithm runner for optimizing heuristic weights."""
+"""
+Genetic Algorithm (GA) Runner for Heuristic Optimization.
+
+This script executes the evolutionary process to optimize the weights of the Expectimax
+heuristic function. It manages the population of genomes (weight sets), evaluates their
+fitness by running parallel game simulations, and evolves the population over generations
+using selection, crossover, and mutation.
+
+Key features:
+- Multiprocessing support for parallel fitness evaluation.
+- Configurable GA parameters (population size, mutation rate, etc.).
+- Tracking and saving of the best genomes.
+"""
 
 from typing import List, Callable, Optional, Dict, Any
 from pathlib import Path
