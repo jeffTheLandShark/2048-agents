@@ -6,7 +6,8 @@ A flexible 2048 AI research framework supporting multiple agents (Expectimax, MC
 
 ## Contributors
 
-- Project Contributors (Please fill in names)
+- Aiden Miller
+- Leigh Goetsch
 
 ## File Descriptions
 
