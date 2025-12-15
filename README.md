@@ -64,11 +64,19 @@ A flexible 2048 AI research framework supporting multiple agents (Expectimax, MC
    ```
 
 ### Running the UI
-To watch an agent play or play manually:
+To play manually:
 ```bash
-python run_ui.py
+python run_ui.py -human
 ```
-This will launch the Pygame window. You can configure the agent in the `run_ui.py` file or via command line arguments if implemented.
+To watch an agent play:
+```bash
+python run_ui.py agent --agent mcts --log-file data/raw_logs/mcts.jsonl --delay 100
+
+python run_ui.py agent --agent expectimax --log-file data/raw_logs/expectimax.jsonl --delay 100
+
+python run_ui.py agent --agent random --log-file data/raw_logs/random.jsonl --delay 100
+```
+This will launch the Pygame window. See `run_ui.py` for further example commands and more info
 
 ### Running Experiments
 To run headless experiments (e.g., 100 games of Expectimax):
